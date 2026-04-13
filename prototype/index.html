@@ -336,8 +336,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="admin-title">商城管理后台</div>
     <div class="admin-menu-item active" onclick="switchAdminMenu(this,'dashboard')">数据概览</div>
     <div class="admin-menu-item" onclick="switchAdminMenu(this,'products')">商品管理</div>
+    <div class="admin-menu-item" onclick="switchAdminMenu(this,'categories')">分类管理</div>
     <div class="admin-menu-item" onclick="switchAdminMenu(this,'orders')">订单管理</div>
     <div class="admin-menu-item" onclick="switchAdminMenu(this,'users')">用户管理</div>
+    <div class="admin-menu-item" onclick="switchAdminMenu(this,'regions')">区域管理</div>
+    <div class="admin-menu-item" onclick="switchAdminMenu(this,'inventory')">库存管理</div>
+    <div class="admin-menu-item" onclick="switchAdminMenu(this,'settings')">系统设置</div>
   </div>
   <div class="admin-main">
     <div class="admin-header">
@@ -434,6 +438,72 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             <tr><td>2</td><td>用户002</td><td>139****9999</td><td>3</td><td>¥567</td><td>2026-02-15</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- 分类管理 -->
+      <div class="admin-page" id="admin-categories">
+        <div style="margin-bottom:16px"><button class="btn" onclick="alert('新增分类')">+ 新增分类</button></div>
+        <table class="admin-table">
+          <thead><tr><th style="width:60px">ID</th><th>分类名称</th><th style="width:100px">商品数</th><th style="width:100px">状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>数码</td><td>128</td><td><span class="pill on">启用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
+            <tr><td>2</td><td>服装</td><td>256</td><td><span class="pill on">启用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
+            <tr><td>3</td><td>食品</td><td>89</td><td><span class="pill on">启用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
+            <tr><td>4</td><td>家电</td><td>67</td><td><span class="pill off">禁用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-success">启用</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 区域管理 -->
+      <div class="admin-page" id="admin-regions">
+        <div style="margin-bottom:16px"><button class="btn" onclick="alert('新增区域')">+ 新增区域</button></div>
+        <table class="admin-table">
+          <thead><tr><th style="width:60px">ID</th><th>区域名称</th><th style="width:120px">区域编码</th><th style="width:100px">商品数</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>华东</td><td>EC</td><td>320</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
+            <tr><td>2</td><td>华北</td><td>NC</td><td>180</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
+            <tr><td>3</td><td>华南</td><td>SC</td><td>256</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
+            <tr><td>4</td><td>东北</td><td>NE</td><td>95</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 库存管理 -->
+      <div class="admin-page" id="admin-inventory">
+        <div class="admin-stats">
+          <div class="stat-card purple"><div>总SKU</div><div class="stat-num">856</div></div>
+          <div class="stat-card green"><div>库存充足</div><div class="stat-num">720</div></div>
+          <div class="stat-card red"><div>库存预警</div><div class="stat-num">35</div></div>
+          <div class="stat-card orange"><div>已售罄</div><div class="stat-num">12</div></div>
+        </div>
+        <table class="admin-table" style="margin-top:16px">
+          <thead><tr><th>商品名称</th><th>SKU规格</th><th style="width:100px">库存</th><th style="width:100px">预警阈值</th><th style="width:100px">状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>电动牙刷 Pro</td><td>白色</td><td>100</td><td>20</td><td><span class="pill ok">正常</span></td><td class="table-actions"><button class="table-btn btn-outline">补货</button></td></tr>
+            <tr><td>电动牙刷 Pro</td><td>黑色</td><td>8</td><td>20</td><td><span class="pill on">预警</span></td><td class="table-actions"><button class="table-btn btn-outline">补货</button></td></tr>
+            <tr><td>智能手表</td><td>标准版</td><td>0</td><td>10</td><td><span class="pill off">售罄</span></td><td class="table-actions"><button class="table-btn btn-success">立即补货</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 系统设置 -->
+      <div class="admin-page" id="admin-settings">
+        <div style="background:#fff;border-radius:10px;padding:16px">
+          <div class="section-title">支付配置</div>
+          <div class="form-group"><label class="form-label">微信商户号</label><input type="text" class="form-control" placeholder="请输入商户号"></div>
+          <div class="form-group"><label class="form-label">微信API密钥</label><input type="text" class="form-control" placeholder="请输入API密钥"></div>
+          <div style="margin-top:16px"><button class="btn">保存配置</button></div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:16px;margin-top:16px">
+          <div class="section-title">管理员账号</div>
+          <table class="admin-table">
+            <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>最后登录</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>admin</td><td><span class="pill on">超级管理员</span></td><td>2026-04-13 10:00</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button></td></tr>
+              <tr><td>2</td><td>manager01</td><td><span class="pill">运营</span></td><td>2026-04-12 15:30</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
