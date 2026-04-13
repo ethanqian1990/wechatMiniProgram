@@ -511,33 +511,115 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- 商品编辑弹窗 -->
 <div class="modal" id="product-modal">
-  <div class="modal-content">
-    <div style="font-size:16px;font-weight:700;color:#333">商品编辑</div>
-    <div class="form-row">
-      <label>商品名称</label>
-      <input id="product-name" value="电动牙刷 Pro" />
+  <div class="modal-content" style="max-width:600px;padding:20px">
+    <div style="font-size:18px;font-weight:700;color:#333;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:12px">商品编辑</div>
+    
+    <!-- 商品图片 -->
+    <div class="form-group">
+      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">商品图片</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
+        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
+        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
+        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
+      </div>
     </div>
-    <div class="form-row">
-      <label>分类</label>
-      <select id="product-category">
-        <option>数码</option>
-        <option>服装</option>
-        <option>食品</option>
-      </select>
+    
+    <!-- 基本信息 -->
+    <div class="form-group">
+      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">商品名称 <span style="color:#e4393c">*</span></label>
+      <input id="product-name" value="电动牙刷 Pro" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
     </div>
-    <div class="form-row">
-      <label>价格</label>
-      <input id="product-price" type="number" value="299" />
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">分类 <span style="color:#e4393c">*</span></label>
+        <select id="product-category" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+          <option>数码</option>
+          <option>服装</option>
+          <option>食品</option>
+          <option>家电</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">所属区域</label>
+        <select style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+          <option>全国</option>
+          <option>华东</option>
+          <option>华北</option>
+          <option>华南</option>
+        </select>
+      </div>
     </div>
-    <div class="form-row">
-      <label>库存</label>
-      <input id="product-stock" type="number" value="100" />
+    
+    <!-- 价格 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">售价 <span style="color:#e4393c">*</span></label>
+        <input id="product-price" type="number" value="299" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">原价</label>
+        <input type="number" value="399" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">会员价</label>
+        <input type="number" value="279" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
+      </div>
     </div>
-    <div class="form-row">
-      <label>状态</label>
-      <select id="product-status">
+    
+    <!-- SKU规格 -->
+    <div class="form-group">
+      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">SKU规格管理</label>
+      <div style="background:#fafafa;border-radius:8px;padding:12px">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <span style="padding:4px 10px;background:#e4393c;color:#fff;border-radius:4px;font-size:12px">颜色: 白色</span>
+          <span style="padding:4px 10px;background:#f5f5f5;border-radius:4px;font-size:12px">黑色</span>
+          <button style="padding:4px 10px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:12px">+ 添加规格</button>
+        </div>
+        <table style="width:100%;font-size:12px">
+          <thead><tr><th>规格</th><th>价格</th><th>库存</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>白色</td><td><input type="number" value="299" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><input type="number" value="100" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><span class="pill on">上架</span></td></tr>
+            <tr><td>黑色</td><td><input type="number" value="299" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><input type="number" value="50" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><span class="pill on">上架</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- 库存 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">总库存</label>
+        <input id="product-stock" type="number" value="150" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
+      </div>
+      <div class="form-group">
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">库存预警阈值</label>
+        <input type="number" value="20" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
+      </div>
+    </div>
+    
+    <!-- 商品描述 -->
+    <div class="form-group">
+      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">商品描述</label>
+      <textarea rows="4" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:none">电动牙刷 Pro 智能声波牙刷，高频振动，深度清洁...</textarea>
+    </div>
+    
+    <!-- 状态 -->
+    <div class="form-group">
+      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">商品状态</label>
+      <select id="product-status" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px">
         <option>上架</option>
         <option>下架</option>
+      </select>
+    </div>
+    
+    <div style="display:flex;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid #eee">
+      <button class="btn btn-outline" style="flex:1;padding:12px" onclick="closeProductModal()">取消</button>
+      <button class="btn" style="flex:1;padding:12px" onclick="saveProduct()">保存商品</button>
+    </div>
+  </div>
+</div>
       </select>
     </div>
     <div class="modal-actions">
