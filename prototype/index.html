@@ -5,793 +5,122 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>购物商城小程序原型</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-size:14px}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}
-.miniprogram{width:100%;height:100%;position:relative}
-.header{background:#fff;padding:12px;text-align:center;border-bottom:1px solid #eee;position:absolute;top:0;width:100%;z-index:100}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;padding:20px}
+.container{width:375px;height:667px;margin:0 auto;background:#fff;border-radius:30px;overflow:hidden;position:relative;border:8px solid #1a1a1a}
+.header{height:44px;background:#fff;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee;position:absolute;top:0;width:100%;z-index:10}
 .header h1{font-size:16px}
-.tab-bar{position:absolute;bottom:0;width:100%;background:#fff;display:flex;border-top:1px solid #eee;z-index:200;height:50px}
-.tab-item{flex:1;text-align:center;padding:8px;color:#666;font-size:11px;cursor:pointer}
-.tab-item.active{color:#e4393c}
-.page{display:none;padding:44px 0 50px;height:100%;overflow-y:auto}
+.page{position:absolute;top:44px;bottom:50px;width:100%;overflow-y:auto;display:none}
 .page.active{display:block}
-.btn{display:inline-block;padding:6px 12px;background:#e4393c;color:#fff;border-radius:4px;border:none;font-size:12px}
-.btn-outline{border:1px solid #ddd;background:#fff;color:#333}
-.btn-danger{background:#e4393c}
-.btn-success{background:#4caf50}
+.tabbar{position:absolute;bottom:0;width:100%;height:50px;background:#fff;display:flex;border-top:1px solid #eee;z-index:10}
+.tab{flex:1;text-align:center;padding:8px 0;font-size:11px;color:#666;cursor:pointer}
+.tab.active{color:#e4393c}
+.banner{height:160px;background:linear-gradient(135deg,#e4393c,#ff6b6b);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;margin:10px;border-radius:8px}
 .goods-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px}
-.goods-item{background:#fff;border-radius:8px;overflow:hidden}
-.goods-img{width:100%;height:150px;background:#eee;display:flex;align-items:center;justify-content:center;color:#999}
+.goods-item{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.goods-img{height:120px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#999}
 .goods-info{padding:10px}
-.goods-name{font-size:14px;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.goods-name{font-size:13px;margin-bottom:5px}
 .goods-price{color:#e4393c;font-size:16px;font-weight:bold}
-.search-box{padding:10px;background:#fff}
-.search-input{width:100%;padding:10px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5}
-.banner{height:160px;background:linear-gradient(135deg,#e4393c,#ff6b6b);border-radius:8px;margin:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px}
-.section{padding:15px;background:#fff;margin:10px;border-radius:8px}
-.section-title{font-size:16px;font-weight:bold;margin-bottom:10px}
-.category-list{display:flex}
+.search{padding:10px}
+.search input{width:100%;padding:8px 15px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5;font-size:13px}
+.category{display:flex;height:100%}
 .category-left{width:80px;background:#f5f5f5}
 .category-item{padding:15px 10px;text-align:center;font-size:12px}
-.category-item.active{background:#fff;color:#e4393c;border-left:3px solid #e4393c}
+.category-item.active{background:#fff;color:#e4393c}
 .category-right{flex:1;padding:10px}
-.form-group{margin-bottom:15px}
-.form-label{display:block;margin-bottom:5px;font-size:14px}
-.form-input{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px}
-.cart-item{display:flex;padding:15px;background:#fff;margin:10px;border-radius:8px}
-.cart-checkbox{width:20px;height:20px;margin-right:10px}
-.cart-img{width:80px;height:80px;background:#eee;border-radius:4px}
+.cart-item{display:flex;padding:10px;background:#fff;margin:10px;border-radius:8px}
+.cart-img{width:80px;height:80px;background:#f5f5f5;border-radius:4px}
 .cart-info{flex:1;margin-left:10px}
-.cart-name{font-size:14px;margin-bottom:5px}
+.cart-name{font-size:13px;margin-bottom:5px}
 .cart-price{color:#e4393c;font-size:16px}
-.cart-num{float:right}
-.cart-footer{position:fixed;bottom:50px;width:100%;background:#fff;padding:10px 15px;display:flex;border-top:1px solid #eee}
-.cart-total{flex:1;font-size:16px}
+.cart-num{display:flex;align-items:center;margin-top:5px}
+.cart-num button{width:24px;height:24px;border:1px solid #ddd;background:#fff}
+.cart-num span{padding:0 10px}
+.cart-footer{position:absolute;bottom:50px;width:100%;background:#fff;padding:10px 15px;display:flex;border-top:1px solid #eee}
+.cart-total{flex:1}
 .cart-total span{color:#e4393c;font-size:18px;font-weight:bold}
+.cart-footer .btn{background:#e4393c;color:#fff;padding:8px 20px;border:none;border-radius:4px}
 .user-header{background:linear-gradient(135deg,#e4393c,#ff6b6b);padding:30px 20px;color:#fff}
-.user-avatar{width:60px;height:60px;background:#fff;border-radius:50%}
 .user-name{font-size:18px;margin-top:10px}
-.order-tabs{display:flex;background:#fff;padding:10px 0}
-.order-tab{flex:1;text-align:center;padding:10px;font-size:12px}
-.order-tab.active{color:#e4393c;border-bottom:2px solid #e4393c}
-.order-item{background:#fff;margin:10px;padding:15px;border-radius:8px}
-.order-header{display:flex;justify-content:space-between;margin-bottom:10px}
-.order-status{color:#e4393c}
-.order-goods{display:flex;padding:10px 0}
-.order-goods img{width:60px;height:60px;background:#eee;margin-right:10px}
-.order-footer{text-align:right;padding-top:10px;border-top:1px solid #eee}
-.address-list{padding:10px}
-.address-item{background:#fff;padding:15px;margin-bottom:10px;border-radius:8px}
-.address-default{color:#e4393c;font-size:12px;border:1px solid #e4393c;padding:2px 6px;border-radius:2px;margin-left:10px}
-/* Admin Styles */
-.admin-sidebar{position:absolute;left:0;top:0;width:200px;height:100%;background:#1a1a2e;color:#fff;z-index:200}
-.admin-menu{padding:20px 0}
-.admin-menu-item{padding:15px 20px;cursor:pointer}
-.admin-menu-item.active{background:#16213e}
-.admin-menu-item:hover{background:#16213e}
-.admin-main{margin-left:200px;padding:20px}
-.admin-header{background:#fff;padding:15px 20px;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
-.admin-table{width:100%;background:#fff;border-collapse:collapse}
-.admin-table th,.admin-table td{padding:12px;border-bottom:1px solid #eee;text-align:left}
-.admin-table th{background:#f5f5f5}
-.table-btn{padding:5px 10px;margin:0 3px;border-radius:4px;font-size:12px;cursor:pointer}
-.admin-card{background:#fff;padding:20px;border-radius:8px;margin-bottom:20px}
-.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-.stat-card{background:linear-gradient(135deg,#667eea,#764ba2);padding:20px;border-radius:8px;color:#fff}
-.stat-card.green{background:linear-gradient(135deg,#11998e,#38ef7d)}
-.stat-card.red{background:linear-gradient(135deg,#eb3349,#f45c43)}
-.stat-card.orange{background:linear-gradient(135deg,#f2994a,#f2c94c)}
-.stat-num{font-size:28px;font-weight:bold}
-/* Modal */
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:300}
-.modal.active{display:block}
-.modal-content{background:#fff;margin:50px auto;padding:20px;border-radius:8px;max-width:500px}
-/* Region Selector */
-.region-selector{padding:10px;background:#fff;display:flex;gap:10px;flex-wrap:wrap}
-.region-tag{padding:5px 12px;background:#f5f5f5;border-radius:20px;font-size:12px;cursor:pointer}
-.region-tag.active{background:#e4393c;color:#fff}
+.menu-list{background:#fff;margin-top:10px}
+.menu-item{padding:15px 20px;border-bottom:1px solid #f5f5f5;display:flex;justify-content:space-between}
+.btn{background:#e4393c;color:#fff;padding:8px 20px;border:none;border-radius:4px}
 </style>
 </head>
-<body style="background:#f5f5f5;padding:20px">
-<div style="width:375px;height:667px;margin:0 auto;background:#fff;border-radius:30px;overflow:hidden;position:relative;border:8px solid #1a1a1a;box-shadow:0 10px 30px rgba(0,0,0,0.3)">
-
-<!-- 小程序预览 -->
-<div class="miniprogram" style="width:100%;height:100%;position:relative">
-<div class="header">
-<h1 id="page-title">购物商城</h1>
-</div>
+<body>
+<div class="container">
+<div class="header"><h1 id="title">购物商城</h1></div>
 
 <!-- 首页 -->
 <div class="page active" id="page-home">
-<div class="region-selector">
-<span class="region-tag active" data-region="华东">华东</span>
-<span class="region-tag" data-region="华北">华北</span>
-<span class="region-tag" data-region="华南">华南</span>
-<span class="region-tag" data-region="东北">东北</span>
-<span class="region-tag" data-region="西南">西南</span>
-</div>
-<div class="banner" id="banner">华东精选好物</div>
-<div class="search-box">
-<input type="text" class="search-input" placeholder="搜索商品" onclick="showPage('search')">
-</div>
-<div class="section">
-<div class="section-title">热门推荐</div>
+<div class="banner">华东精选好物</div>
+<div class="search"><input placeholder="搜索商品" onclick="show('search')"></div>
 <div class="goods-list">
-<div class="goods-item" onclick="showPage('goods-detail')">
-<div class="goods-img">商品图片</div>
-<div class="goods-info">
-<div class="goods-name">电动牙刷 Pro</div>
-<div class="goods-price">¥299</div>
-</div>
-</div>
-<div class="goods-item">
-<div class="goods-img">商品图片</div>
-<div class="goods-info">
-<div class="goods-name">智能手表</div>
-<div class="goods-price">¥599</div>
-</div>
-</div>
-<div class="goods-item">
-<div class="goods-img">商品图片</div>
-<div class="goods-info">
-<div class="goods-name">无线耳机</div>
-<div class="goods-price">¥399</div>
-</div>
-</div>
-<div class="goods-item">
-<div class="goods-img">商品图片</div>
-<div class="goods-info">
-<div class="goods-name">充电宝</div>
-<div class="goods-price">¥99</div>
-</div>
-</div>
-</div>
+<div class="goods-item" onclick="show('detail')"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">电动牙刷 Pro</div><div class="goods-price">¥299</div></div></div>
+<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">智能手表</div><div class="goods-price">¥599</div></div></div>
+<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">无线耳机</div><div class="goods-price">¥399</div></div></div>
+<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">充电宝</div><div class="goods-price">¥99</div></div></div>
 </div>
 </div>
 
 <!-- 分类页 -->
 <div class="page" id="page-category">
-<div class="search-box">
-<input type="text" class="search-input" placeholder="搜索商品" onclick="showPage('search')">
-</div>
-<div class="category-list">
+<div class="search"><input placeholder="搜索商品"></div>
+<div class="category">
 <div class="category-left">
 <div class="category-item active">数码</div>
 <div class="category-item">服装</div>
 <div class="category-item">食品</div>
-<div class="category-item">家电</div>
 </div>
 <div class="category-right">
 <div class="goods-list">
-<div class="goods-item">
-<div class="goods-img">商品图片</div>
-<div class="goods-info">
-<div class="goods-name">手机壳</div>
-<div class="goods-price">¥29</div>
+<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">手机壳</div><div class="goods-price">¥29</div></div></div>
+<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">数据线</div><div class="goods-price">¥39</div></div></div>
 </div>
-</div>
-<div class="goods-item">
-<div class="goods-img">商品图片</div>
-<div class="goods-info">
-<div class="goods-name">数据线</div>
-<div class="goods-price">¥19</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- 搜索页 -->
-<div class="page" id="page-search">
-<div class="search-box">
-<input type="text" class="search-input" placeholder="搜索商品">
-</div>
-<div class="section">
-<div class="section-title">热门搜索</div>
-<div style="padding:10px">
-<span class="region-tag">手机</span>
-<span class="region-tag">耳机</span>
-<span class="region-tag">手表</span>
-</div>
-</div>
-<div class="section">
-<div class="section-title">搜索历史</div>
-<div style="padding:10px">
-<span class="region-tag">电动牙刷</span>
-<span class="region-tag">智能手表</span>
 </div>
 </div>
 </div>
 
 <!-- 购物车页 -->
 <div class="page" id="page-cart">
-<div class="cart-item">
-<input type="checkbox" class="cart-checkbox" checked>
-<div class="cart-img">商品</div>
-<div class="cart-info">
-<div class="cart-name">电动牙刷 Pro</div>
-<div class="goods-price">¥299</div>
-<div class="cart-num">
-<button class="btn btn-outline" onclick="changeNum(this,-1)">-</button>
-<span>1</span>
-<button class="btn btn-outline" onclick="changeNum(this,1)">+</button>
-</div>
-</div>
-</div>
-<div class="cart-item">
-<input type="checkbox" class="cart-checkbox" checked>
-<div class="cart-img">商品</div>
-<div class="cart-info">
-<div class="cart-name">智能手表</div>
-<div class="goods-price">¥599</div>
-<div class="cart-num">
-<button class="btn btn-outline" onclick="changeNum(this,-1)">-</button>
-<span>1</span>
-<button class="btn btn-outline" onclick="changeNum(this,1)">+</button>
-</div>
-</div>
-</div>
-<div class="cart-footer">
-<div class="cart-total">合计: <span>¥898</span></div>
-<button class="btn" onclick="showPage('order-confirm')">结算</button>
-</div>
+<div class="cart-item"><div class="cart-img"></div><div class="cart-info"><div class="cart-name">电动牙刷 Pro</div><div class="cart-price">¥299</div><div class="cart-num"><button>-</button><span>1</span><button>+</button></div></div></div>
+<div class="cart-item"><div class="cart-img"></div><div class="cart-info"><div class="cart-name">智能手表</div><div class="cart-price">¥599</div><div class="cart-num"><button>-</button><span>1</span><button>+</button></div></div></div>
+<div class="cart-footer"><div class="cart-total">合计: <span>¥898</span></div><button class="btn" onclick="show('confirm')">结算</button></div>
 </div>
 
 <!-- 我的页 -->
 <div class="page" id="page-user">
-<div class="user-header">
-<div class="user-avatar"></div>
-<div class="user-name">微信用户</div>
-</div>
-<div class="section">
-<div class="order-tabs">
-<div class="order-tab active" onclick="switchOrderTab(this,'all')">全部</div>
-<div class="order-tab" onclick="switchOrderTab(this,'pending')">待付款</div>
-<div class="order-tab" onclick="switchOrderTab(this,'shipped')">待收货</div>
-<div class="order-tab" onclick="switchOrderTab(this,'done')">已完成</div>
-</div>
-</div>
-<div class="section" style="margin-top:10px">
-<div class="section-title">我的订单</div>
-<div class="order-item">
-<div class="order-header">
-<div>订单号: 202604131234</div>
-<div class="order-status">待付款</div>
-</div>
-<div class="order-goods">
-<div class="cart-img"></div>
-<div>
-<div>电动牙刷 Pro</div>
-<div class="goods-price">¥299</div>
-</div>
-</div>
-<div class="order-footer">
-<div>共1件商品 合计: <span style="color:#e4393c;font-size:18px">¥299</span></div>
-<button class="btn" onclick="showPage('order-detail')">查看详情</button>
-</div>
-</div>
-</div>
-<div class="section" style="margin-top:10px">
-<div class="section-title">收货地址</div>
-<div class="address-list">
-<div class="address-item">
-<div><b>张三</b> <138****8888></div>
-<div>上海市浦东新区张江路123号</div>
-<span class="address-default">默认</span>
-</div>
-</div>
-<button class="btn btn-outline" style="width:100%;margin-top:10px" onclick="showPage('address-edit')">+ 新增收货地址</button>
-</div>
+<div class="user-header"><div style="width:60px;height:60px;background:#fff;border-radius:50%"></div><div class="user-name">用户昵称</div></div>
+<div class="menu-list">
+<div class="menu-item" onclick="show('orders')">我的订单 <span>→</span></div>
+<div class="menu-item" onclick="show('address')">收货地址 <span>→</span></div>
 </div>
 </div>
 
-<!-- 商品详情页 -->
-<div class="page" id="page-goods-detail">
-<div class="goods-img" style="height:300px">商品图片</div>
-<div class="section">
-<div class="goods-price" style="font-size:24px">¥299</div>
-<div style="margin:10px 0">电动牙刷 Pro 智能声波牙刷</div>
-<div style="color:#999;font-size:12px">商品描述内容...</div>
-</div>
-<div class="section">
-<div class="section-title">商品规格</div>
-<div style="padding:10px">
-<span class="region-tag active">白色</span>
-<span class="region-tag">黑色</span>
-</div>
-</div>
-<div class="section">
-<div class="section-title">数量</div>
-<div style="padding:10px">
-<button class="btn btn-outline" onclick="changeNum(this,-1)">-</button>
-<span>1</span>
-<button class="btn btn-outline" onclick="changeNum(this,1)">+</button>
-</div>
-</div>
-<div class="cart-footer">
-<button class="btn btn-outline" style="flex:1;margin-right:10px">加入购物车</button>
-<button class="btn" style="flex:1" onclick="showPage('order-confirm')">立即购买</button>
-</div>
-</div>
-
-<!-- 订单确认页 -->
-<div class="page" id="page-order-confirm">
-<div class="section" onclick="showPage('address-list')">
-<div class="section-title">收货地址</div>
-<div><b>张三</b> <138****8888></div>
-<div>上海市浦东新区张江路123号</div>
-</div>
-<div class="section">
-<div class="order-item">
-<div class="order-goods">
-<div class="cart-img"></div>
-<div>
-<div>电动牙刷 Pro</div>
-<div class="goods-price">¥299</div>
-</div>
-<span>×1</span>
-</div>
-</div>
-</div>
-<div class="section">
-<div>支付方式: <b>微信支付</b></div>
-</div>
-<div class="cart-footer">
-<div class="cart-total">合计: <span>¥299</span></div>
-<button class="btn" onclick="showPage('order-pay')">去支付</button>
-</div>
-</div>
-
-<!-- 订单列表页 -->
-<div class="page" id="page-order-list">
-<div class="order-tabs">
-<div class="order-tab active" onclick="switchOrderTab(this,'all')">全部</div>
-<div class="order-tab" onclick="switchOrderTab(this,'pending')">待付款</div>
-<div class="order-tab" onclick="switchOrderTab(this,'shipped')">待发货</div>
-<div class="order-tab" onclick="switchOrderTab(this,'done')">待收货</div>
-<div class="order-tab" onclick="switchOrderTab(this,'finish')">已完成</div>
-</div>
-<div class="order-item">
-<div class="order-header">
-<div>订单号: 202604131234</div>
-<div class="order-status">待付款</div>
-</div>
-<div class="order-goods">
-<div class="cart-img"></div>
-<div>
-<div>电动牙刷 Pro</div>
-<div class="goods-price">¥299</div>
-</div>
-</div>
-<div class="order-footer">
-<div>共1件商品 合计: <span style="color:#e4393c;font-size:18px">¥299</span></div>
-<button class="btn" onclick="showPage('order-detail')">查看详情</button>
-</div>
-</div>
-</div>
-
-<!-- 订单详情页 -->
-<div class="page" id="page-order-detail">
-<div class="section">
-<div class="section-title">订单信息</div>
-<div>订单号: 202604131234</div>
-<div>状态: <span class="order-status">待付款</span></div>
-<div>下单时间: 2026-04-13 12:00</div>
-</div>
-<div class="section">
-<div class="section-title">收货信息</div>
-<div><b>张三</b></div>
-<div>138****8888</div>
-<div>上海市浦东新区张江路123号</div>
-</div>
-<div class="section">
-<div class="section-title">商品信息</div>
-<div class="order-goods">
-<div class="cart-img"></div>
-<div>
-<div>电动牙刷 Pro</div>
-<div class="goods-price">¥299</div>
-</div>
-<span>×1</span>
-</div>
-</div>
-<div class="section">
-<div class="order-footer">
-<div>共1件商品 合计: <span style="color:#e4393c;font-size:18px">¥299</span></div>
-<button class="btn">去支付</button>
-</div>
-</div>
-</div>
-
-<!-- 地址列表页 -->
-<div class="page" id="page-address-list">
-<div class="section">
-<div class="section-title">收货地址</div>
-<div class="address-item">
-<div><b>张三</b> <138****8888> <span class="address-default">默认</span></div>
-<div>上海市浦东新区张江路123号</div>
-<div style="margin-top:10px">
-<button class="btn btn-outline" onclick="showPage('address-edit')">编辑</button>
-<button class="btn btn-outline btn-danger">删除</button>
-</div>
-</div>
-<button class="btn" style="width:100%;margin:10px" onclick="showPage('address-edit')">+ 新增收货地址</button>
-</div>
-
-<!-- 地址编辑页 -->
-<div class="page" id="page-address-edit">
-<div class="section">
-<div class="section-title">新增收货地址</div>
-<div class="form-group">
-<label class="form-label">收货人</label>
-<input type="text" class="form-input" placeholder="请输入收货人姓名">
-</div>
-<div class="form-group">
-<label class="form-label">手机号</label>
-<input type="text" class="form-input" placeholder="请输入手机号">
-</div>
-<div class="form-group">
-<label class="form-label">省份</label>
-<select class="form-input">
-<option>请选择省份</option>
-</select>
-</div>
-<div class="form-group">
-<label class="form-label">详细地址</label>
-<textarea class="form-input" rows="3" placeholder="请输入详细地址"></textarea>
-</div>
-<div>
-<label><input type="checkbox"> 设为默认地址</label>
-</div>
-</div>
-<div class="cart-footer">
-<button class="btn" style="width:100%" onclick="showPage('user')">保存</button>
-</div>
-
-<!-- Tab Bar -->
-<div class="tab-bar">
-<div class="tab-item active" onclick="showPage('home')">
-<div>首页</div>
-</div>
-<div class="tab-item" onclick="showPage('category')">
-<div>分类</div>
-</div>
-<div class="tab-item" onclick="showPage('cart')">
-<div>购物车</div>
-</div>
-<div class="tab-item" onclick="showPage('user')">
-<div>我的</div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- 管理后台 -->
-<div class="admin" id="admin" style="display:none">
-<div class="admin-sidebar">
-<div style="padding:20px;font-size:18px;font-weight:bold">商城管理后台</div>
-<div class="admin-menu">
-<div class="admin-menu-item active" onclick="switchAdminMenu(this,'dashboard')">数据概览</div>
-<div class="admin-menu-item" onclick="switchAdminMenu(this,'products')">商品管理</div>
-<div class="admin-menu-item" onclick="switchAdminMenu(this,'orders')">订单管理</div>
-<div class="admin-menu-item" onclick="switchAdminMenu(this,'users')">用户管理</div>
-</div>
-</div>
-<div class="admin-main">
-<!-- 数据概览 -->
-<div class="admin-page active" id="admin-dashboard">
-<div class="admin-stats">
-<div class="stat-card">
-<div>今日订单</div>
-<div class="stat-num">128</div>
-</div>
-<div class="stat-card green">
-<div>今日销售额</div>
-<div class="stat-num">¥12,890</div>
-</div>
-<div class="stat-card red">
-<div>待发货</div>
-<div class="stat-num">35</div>
-</div>
-<div class="stat-card orange">
-<div>用户数</div>
-<div class="stat-num">1,234</div>
-</div>
-</div>
-</div>
-
-<!-- 商品管理 -->
-<div class="admin-page" id="admin-products">
-<div style="margin-bottom:20px">
-<button class="btn" onclick="showProductModal()">+ 添加商品</button>
-</div>
-<table class="admin-table">
-<thead>
-<tr>
-<th>ID</th>
-<th>商品名称</th>
-<th>分类</th>
-<th>价格</th>
-<th>库存</th>
-<th>状态</th>
-<th>操作</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>电动牙刷 Pro</td>
-<td>数码</td>
-<td>¥299</td>
-<td>100</td>
-<td><span class="region-tag active">上架</span></td>
-<td>
-<button class="table-btn btn-outline" onclick="editProduct(1)">编辑</button>
-<button class="table-btn btn-danger" onclick="toggleProduct(1)">下架</button>
-</td>
-</tr>
-<tr>
-<td>2</td>
-<td>智能手表</td>
-<td>数码</td>
-<td>¥599</td>
-<td>50</td>
-<td><span class="region-tag active">上架</span></td>
-<td>
-<button class="table-btn btn-outline">编辑</button>
-<button class="table-btn btn-danger">下架</button>
-</td>
-</tr>
-<tr>
-<td>3</td>
-<td>无线耳机</td>
-<td>数码</td>
-<td>¥399</td>
-<td>80</td>
-<td><span class="region-tag">下架</span></td>
-<td>
-<button class="table-btn btn-outline">编辑</button>
-<button class="table-btn btn-success">上架</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<!-- 订单管理 -->
-<div class="admin-page" id="admin-orders">
-<div style="margin-bottom:20px">
-<input type="text" class="form-input" style="width:200px;display:inline-block" placeholder="搜索订单号">
-<button class="btn">搜索</button>
-</div>
-<table class="admin-table">
-<thead>
-<tr>
-<th>订单号</th>
-<th>用户</th>
-<th>商品</th>
-<th>金额</th>
-<th>状态</th>
-<th>时间</th>
-<th>操作</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>202604131234</td>
-<td>张三</td>
-<td>电动牙刷 Pro</td>
-<td>¥299</td>
-<td><span class="order-status">待付款</span></td>
-<td>2026-04-13 12:00</td>
-<td>
-<button class="table-btn btn-outline">详情</button>
-</td>
-</tr>
-<tr>
-<td>202604131233</td>
-<td>李四</td>
-<td>智能手表</td>
-<td>¥599</td>
-<td><span style="color:#4caf50">待发货</span></td>
-<td>2026-04-13 11:30</td>
-<td>
-<button class="table-btn btn-outline">详情</button>
-<button class="table-btn btn-success">发货</button>
-</td>
-</tr>
-<tr>
-<td>202604131232</td>
-<td>王五</td>
-<td>无线耳机</td>
-<td>¥399</td>
-<td><span style="color:#999">已完成</span></td>
-<td>2026-04-13 10:00</td>
-<td>
-<button class="table-btn btn-outline">详情</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<!-- 用户管理 -->
-<div class="admin-page" id="admin-users">
-<table class="admin-table">
-<thead>
-<tr>
-<th>ID</th>
-<th>昵称</th>
-<th>手机号</th>
-<th>订单数</th>
-<th>消费金额</th>
-<th>注册时间</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>微信用户</td>
-<td>138****8888</td>
-<td>5</td>
-<td>¥1,234</td>
-<td>2026-01-01</td>
-</tr>
-<tr>
-<td>2</td>
-<td>用户002</td>
-<td>139****9999</td>
-<td>3</td>
-<td>¥567</td>
-<td>2026-02-15</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-
-<!-- 商品编辑弹窗 -->
-<div class="modal" id="product-modal">
-<div class="modal-content">
-<div class="section-title" style="margin-bottom:20px">商品编辑</div>
-<div class="form-group">
-<label class="form-label">商品名称</label>
-<input type="text" class="form-input" id="product-name" value="电动牙刷 Pro">
-</div>
-<div class="form-group">
-<label class="form-label">分类</label>
-<select class="form-input">
-<option>数码</option>
-<option>服装</option>
-<option>食品</option>
-</select>
-</div>
-<div class="form-group">
-<label class="form-label">价格</label>
-<input type="number" class="form-input" value="299">
-</div>
-<div class="form-group">
-<label class="form-label">库存</label>
-<input type="number" class="form-input" value="100">
-</div>
-<div class="form-group">
-<label class="form-label">状态</label>
-<select class="form-input">
-<option>上架</option>
-<option>下架</option>
-</select>
-</div>
-<div style="text-align:right;margin-top:20px">
-<button class="btn btn-outline" onclick="closeProductModal()">取消</button>
-<button class="btn" onclick="saveProduct()">保存</button>
-</div>
+<!-- Tabbar -->
+<div class="tabbar">
+<div class="tab active" onclick="show('home')">首页</div>
+<div class="tab" onclick="show('category')">分类</div>
+<div class="tab" onclick="show('cart')">购物车</div>
+<div class="tab" onclick="show('user')">我的</div>
 </div>
 </div>
 
 <script>
-let currentRegion = '华东';
-let currentPage = 'home';
-let currentOrderStatus = 'all';
+var titles = {home:'购物商城',category:'商品分类',cart:'购物车',user:'个人中心'};
+var tabs = {home:0, category:1, cart:2, user:3};
 
-function showPage(page) {
-document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-document.getElementById('page-' + page).classList.add('active');
-currentPage = page;
-updateTabBar();
-updateTitle();
+function show(page) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('title').textContent = titles[page] || '购物商城';
+
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  if(tabs[page] !== undefined) {
+    document.querySelectorAll('.tab')[tabs[page]].classList.add('active');
+  }
 }
-
-function updateTabBar() {
-document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-const tabs = {home:0, category:1, cart:2, user:3};
-if(tabs[currentPage] !== undefined) {
-document.querySelectorAll('.tab-item')[tabs[currentPage]].classList.add('active');
-}
-}
-
-function updateTitle() {
-const titles = {
-'home':'购物商城',
-'category':'商品分类',
-'search':'搜索',
-'cart':'购物车',
-'user':'个人��心',
-'goods-detail':'商品详情',
-'order-confirm':'确认订单',
-'order-list':'我的订单',
-'order-detail':'订单详情',
-'address-list':'收货地址',
-'address-edit':'地址管理'
-};
-document.getElementById('page-title').textContent = titles[currentPage] || '购物商城';
-}
-
-function changeNum(btn, delta) {
-let span = btn.parentElement.querySelector('span');
-let num = parseInt(span.textContent) + delta;
-if(num < 1) num = 1;
-span.textContent = num;
-}
-
-function switchOrderTab(el, status) {
-currentOrderStatus = status;
-document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
-el.classList.add('active');
-}
-
-function showAdmin() {
-document.getElementById('admin').style.display = 'block';
-document.querySelector('.miniprogram').style.display = 'none';
-}
-
-function showMiniProgram() {
-document.getElementById('admin').style.display = 'none';
-document.querySelector('.miniprogram').style.display = 'block';
-}
-
-function switchAdminMenu(el, page) {
-document.querySelectorAll('.admin-menu-item').forEach(m => m.classList.remove('active'));
-el.classList.add('active');
-document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
-document.getElementById('admin-' + page).classList.add('active');
-}
-
-function showProductModal() {
-document.getElementById('product-modal').classList.add('active');
-}
-
-function closeProductModal() {
-document.getElementById('product-modal').classList.remove('active');
-}
-
-function saveProduct() {
-closeProductModal();
-alert('商品已保存');
-}
-
-function editProduct(id) {
-showProductModal();
-}
-
-// Region selector
-document.querySelectorAll('.region-tag[data-region]').forEach(tag => {
-tag.addEventListener('click', function() {
-document.querySelectorAll('.region-tag[data-region]').forEach(t => t.classList.remove('active'));
-this.classList.add('active');
-currentRegion = this.dataset.region;
-document.getElementById('banner').textContent = currentRegion + '精选好物';
-});
-});
-
-// 点击banner切换到管理后台演示
-document.getElementById('banner').addEventListener('click', function() {
-if(confirm('是否切换到管理后台？')) {
-showAdmin();
-}
-});
-
 </script>
 </body>
 </html>
