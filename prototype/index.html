@@ -12,8 +12,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .header .back{position:absolute;left:12px;top:0;height:44px;display:none;align-items:center;color:#333;font-size:14px;cursor:pointer;user-select:none}
 .header.has-back .back{display:flex}
 .header h1{font-size:16px}
-.page{position:absolute;top:44px;bottom:50px;width:100%;overflow-y:auto;display:none}
+.page{position:absolute;top:44px;bottom:50px;width:100%;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
 .page.active{display:block}
+/* 底部固定操作栏脱离文档流，需预留空间否则最后一段内容被挡住无法滚出 */
+.page:has(> .subpage-footer){padding-bottom:84px;box-sizing:border-box}
+/* 商品详情：可滚动内容 + 底部固定双按钮（仿小程序 fixed 底栏） */
+#page-detail.active{display:flex;flex-direction:column;overflow:hidden}
+#page-detail .detail-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#page-detail .detail-footer{flex-shrink:0;width:100%;background:#fff;padding:10px 15px;display:flex;gap:10px;border-top:1px solid #eee;box-shadow:0 -6px 16px rgba(0,0,0,.06)}
+#page-detail .detail-footer .btn{flex:1;width:auto}
 .tabbar{position:absolute;bottom:0;width:100%;height:50px;background:#fff;display:flex;border-top:1px solid #eee;z-index:10}
 .tabbar.hidden{display:none}
 .tab{flex:1;text-align:center;padding:8px 0;font-size:11px;color:#666;cursor:pointer}
@@ -21,7 +28,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .banner{height:160px;background:linear-gradient(135deg,#e4393c,#ff6b6b);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;margin:10px;border-radius:8px}
 .goods-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px}
 .goods-item{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-.goods-img{height:120px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#999}
+.goods-img{height:120px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;background-size:cover;background-position:center}
+.cart-img{background-size:cover;background-position:center;background-color:#eee}
 .goods-info{padding:10px}
 .goods-name{font-size:13px;margin-bottom:5px}
 .goods-price{color:#e4393c;font-size:16px;font-weight:bold}
@@ -95,60 +103,208 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .pill.on{background:#ffeceb;color:#e4393c}
 .pill.ok{background:#eafff2;color:#11998e}
 .pill.off{background:#f0f0f0;color:#999}
+.pill.clickable{cursor:pointer;user-select:none}
 
 /* Admin modal */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000}
-.modal.active{display:flex;align-items:center;justify-content:center}
-.modal-content{width:520px;max-width:calc(100vw - 40px);background:#fff;border-radius:12px;padding:18px}
+.modal.active{display:flex;align-items:center;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 12px;box-sizing:border-box}
+.modal.modal-admin{z-index:1002}
+.modal-content{width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 48px);overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;border-radius:12px;padding:18px;box-sizing:border-box}
 .form-row{margin-top:12px}
 .form-row label{display:block;font-size:13px;color:#333;margin-bottom:6px}
 .form-row input,.form-row select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.order-tabs{display:flex;gap:10px;padding:10px;position:sticky;top:0;background:#f5f5f5;z-index:5}
+.order-tab2{flex:1;text-align:center;padding:8px;border-radius:999px;background:#fff;border:1px solid #eee;font-size:12px;cursor:pointer}
+.order-tab2.active{border-color:#e4393c;color:#e4393c}
+.order-card{background:#fff;margin:10px;border-radius:8px;padding:12px}
+.order-card .top{display:flex;justify-content:space-between;color:#666;font-size:12px}
+.order-card .status{color:#e4393c;font-weight:700}
+.order-card .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+.order-card .actions .btn{padding:6px 10px;border-radius:8px}
+.addr-list{padding:10px}
+.addr-item{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px}
+.addr-item .meta{display:flex;justify-content:space-between;align-items:center}
+.addr-item .actions{display:flex;gap:10px;margin-top:10px;justify-content:flex-end}
+.addr-item .actions .btn{padding:6px 10px;border-radius:8px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1200;align-items:center;justify-content:center}
+.overlay.active{display:flex}
+.overlay-card{width:320px;max-width:calc(100vw - 40px);background:#fff;border-radius:12px;padding:16px}
+.overlay-title{font-size:15px;font-weight:700;margin-bottom:10px}
+.overlay-tags{display:flex;flex-wrap:wrap;gap:8px}
+.overlay-tag{padding:6px 12px;border-radius:999px;background:#f5f5f5;font-size:12px;cursor:pointer}
+.overlay-tag.active{background:#ffeceb;color:#e4393c}
+.overlay-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+.carousel{height:160px;margin:10px;border-radius:8px;overflow:hidden;position:relative}
+.carousel-slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:800;opacity:0;transition:opacity .35s ease}
+.carousel-slide.active{opacity:1}
+.carousel-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
+.carousel-dot{width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.5)}
+.carousel-dot.active{background:#fff}
+/* —— 首页（参考精品电商：大轮播 + 分区 + 三列卡片 + 营销信息） —— */
+.home-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px;font-size:12px;color:#666}
+.home-topbar b{color:#111;font-size:13px}
+.home-search-wrap{padding:0 12px 10px}
+.home-search-inner{display:flex;align-items:center;gap:8px;background:#f0f0f0;border-radius:22px;padding:10px 14px;border:none}
+.home-search-inner::before{content:'';width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23999'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") center/contain no-repeat;flex-shrink:0}
+.home-search-inner input{flex:1;border:none;background:transparent;font-size:13px;outline:none;min-width:0}
+.home-carousel{margin:0 12px 12px;height:200px;border-radius:14px;overflow:hidden;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.home-carousel .carousel-slide{cursor:pointer;align-items:stretch;justify-content:flex-end;padding:0}
+.home-carousel .carousel-slide-bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.home-carousel .carousel-slide-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,rgba(0,0,0,.35) 42%,transparent 72%)}
+.home-carousel .carousel-slide-copy{position:relative;z-index:2;padding:14px 16px 22px;color:#fff;text-align:left;width:100%}
+.home-carousel .carousel-kicker{font-size:11px;opacity:.92;margin-bottom:4px;letter-spacing:.02em}
+.home-carousel .carousel-title{font-size:17px;font-weight:800;line-height:1.25;margin-bottom:4px;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.home-carousel .carousel-sub{font-size:12px;opacity:.88;line-height:1.4;margin-bottom:6px}
+.home-carousel .carousel-promo{font-size:12px;font-weight:700;color:#ffb74d;margin-bottom:8px}
+.home-carousel .carousel-cta{display:inline-block;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.85);font-size:12px;font-weight:600;background:rgba(255,255,255,.12);backdrop-filter:blur(4px)}
+.home-carousel .carousel-dots{bottom:8px}
+.home-cat-scroll-wrap{margin:0 0 10px;padding:0 12px}
+.home-cat-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.home-cat-scroll::-webkit-scrollbar{display:none}
+.home-cat-pill{flex-shrink:0;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #eee;font-size:12px;color:#555;cursor:pointer;white-space:nowrap}
+.home-cat-pill.active{background:#111;color:#fff;border-color:#111}
+.home-sec-head{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 10px}
+.home-sec-head .hleft{display:flex;align-items:center;gap:8px}
+.home-sec-tag{font-size:10px;font-weight:700;color:#fff;background:#e4393c;padding:2px 6px;border-radius:4px}
+.home-sec-title{font-size:15px;font-weight:800;color:#111}
+.home-sec-more{font-size:12px;color:#999;cursor:pointer}
+.home-featured{margin:0 12px 14px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;min-height:118px;cursor:pointer}
+.home-featured-img{width:118px;flex-shrink:0;background-size:cover;background-position:center;background-color:#eee}
+.home-featured-body{flex:1;padding:12px 12px 12px 0;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.home-featured .hf-tag{align-self:flex-start;font-size:10px;color:#e4393c;border:1px solid rgba(228,57,60,.45);padding:2px 6px;border-radius:4px;margin-bottom:6px}
+.home-featured .hf-name{font-size:14px;font-weight:700;color:#222;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-featured .hf-sub{font-size:11px;color:#999;margin-top:4px;line-height:1.3}
+.home-featured .hf-row{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.home-featured .hf-price{font-size:18px;font-weight:800;color:#e4393c}
+.home-featured .hf-line{font-size:12px;color:#bbb;text-decoration:line-through}
+.home-featured .hf-buy{margin-top:auto;align-self:flex-start;margin-top:10px;padding:5px 12px;border-radius:999px;background:#f5f5f5;color:#333;font-size:12px;border:none;font-weight:600}
+.home-sync-hint{margin:0 12px 10px;font-size:11px;color:#999;line-height:1.45}
+.home-sync-hint b{color:#666;font-weight:600}
+.home-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 12px 8px}
+.home-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06);position:relative;cursor:pointer}
+.home-card .hc-img{aspect-ratio:1;width:100%;background-size:cover;background-position:center;background-color:#eee}
+.home-card .hc-body{padding:8px 6px 10px}
+.home-card .hc-tag{font-size:9px;color:#e4393c;border:1px solid rgba(228,57,60,.4);padding:1px 4px;border-radius:3px;display:inline-block;margin-bottom:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-card .hc-name{font-size:11px;font-weight:600;color:#222;line-height:1.3;height:2.6em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.home-card .hc-promo{font-size:9px;color:#e4393c;margin-top:2px;min-height:1.2em}
+.home-card .hc-price-row{display:flex;align-items:baseline;justify-content:space-between;margin-top:6px;gap:4px}
+.home-card .hc-price{font-size:13px;font-weight:800;color:#e4393c}
+.home-card .hc-line{font-size:9px;color:#bbb;text-decoration:line-through}
+.home-card .hc-cart{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#ffeceb;color:#e4393c;border:none;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* 勿写 position:relative，否则会覆盖 .page 的 absolute，首页失去定高与纵向滚动 */
+#page-home{background:#f5f5f5;padding-bottom:12px}
+.link{color:#e4393c;cursor:pointer}
+.chip{display:inline-block;padding:6px 10px;border:1px solid #eee;border-radius:999px;background:#fff;font-size:12px;cursor:pointer;margin-right:8px}
+.chip.active{border-color:#e4393c;color:#e4393c}
+.empty{padding:40px 12px;text-align:center;color:#999}
+/* 原型：替代系统 alert/confirm/prompt */
+.proto-toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(120px);z-index:4000;max-width:min(360px,calc(100vw - 32px));padding:12px 18px;border-radius:12px;background:#323232;color:#fff;font-size:14px;line-height:1.45;box-shadow:0 8px 28px rgba(0,0,0,.25);opacity:0;transition:opacity .25s ease,transform .3s ease;pointer-events:none;text-align:center}
+.proto-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.proto-toast.success{background:#1b5e20}
+.proto-toast.error{background:#b71c1c}
+.proto-toast.info{background:#1565c0}
+.proto-overlay{display:none;position:fixed;inset:0;z-index:3800;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:20px}
+.proto-overlay.active{display:flex}
+.proto-panel{width:100%;max-width:400px;background:#fff;border-radius:14px;padding:18px 18px 14px;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.proto-panel-wide{max-width:440px}
+.proto-panel-title{font-size:16px;font-weight:700;color:#222;margin-bottom:10px}
+.proto-panel-body{font-size:14px;color:#444;line-height:1.55;margin-bottom:6px}
+.proto-panel-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid #f0f0f0}
+.proto-panel-actions .btn{padding:8px 18px;border-radius:8px}
+.form-field-error{display:none;font-size:12px;color:#c62828;margin-top:4px}
+.form-field-error.visible{display:block}
+.form-group.has-error .form-control{border-color:#e57373}
 </style>
 </head>
 <body>
+<div id="proto-toast" class="proto-toast" role="status"></div>
+<div id="proto-confirm" class="proto-overlay" aria-modal="true">
+  <div class="proto-panel">
+    <div class="proto-panel-title" id="proto-confirm-title">请确认</div>
+    <div class="proto-panel-body" id="proto-confirm-body"></div>
+    <div class="proto-panel-actions">
+      <button type="button" class="btn btn-outline" id="proto-confirm-no">取消</button>
+      <button type="button" class="btn" id="proto-confirm-yes">确定</button>
+    </div>
+  </div>
+</div>
+<div id="proto-form" class="proto-overlay" aria-modal="true">
+  <div class="proto-panel proto-panel-wide">
+    <div class="proto-panel-title" id="proto-form-title"></div>
+    <form id="proto-form-inner" novalidate>
+      <div id="proto-form-fields"></div>
+      <div class="proto-panel-actions" style="border-top:none;padding-top:4px;margin-top:8px">
+        <button type="button" class="btn btn-outline" id="proto-form-cancel">取消</button>
+        <button type="submit" class="btn" id="proto-form-submit">提交</button>
+      </div>
+    </form>
+  </div>
+</div>
 <div class="container">
 <div class="header" id="header"><div class="back" onclick="goBack()">返回</div><h1 id="title">购物商城</h1></div>
+<div style="position:absolute;top:10px;right:12px;z-index:50">
+  <button class="btn btn-outline" style="padding:6px 10px;border-radius:8px" onclick="showAdmin()">后台</button>
+</div>
 
 <!-- 首页 -->
 <div class="page active" id="page-home">
-<div style="padding:10px;background:#fff;display:flex;justify-content:space-between;align-items:center" onclick="alert('切换区域')">
-<span style="font-size:13px;color:#333">当前: <b>华东</b></span>
-<span style="font-size:12px;color:#999">▼ 切换区域</span>
-</div>
-<div class="banner" id="banner">华东精选好物</div>
-<div class="search"><input placeholder="搜索商品" onclick="show('search')"></div>
-<div class="goods-list">
-<div class="goods-item" onclick="show('detail')"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">五常大米 10kg</div><div class="goods-price">¥299</div></div></div>
-<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">红富士苹果 5kg</div><div class="goods-price">¥599</div></div></div>
-<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">新鲜草莓 2盒</div><div class="goods-price">¥399</div></div></div>
-<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">土鸡蛋 30枚</div><div class="goods-price">¥99</div></div></div>
-</div>
+  <div class="home-topbar" id="region-bar">
+    <span><b id="region-name">华东</b> · 配送区域</span>
+    <span style="color:#e4393c;font-size:12px">切换 ▼</span>
+  </div>
+  <div class="home-search-wrap">
+    <div class="home-search-inner" id="home-search-wrap-click">
+      <input id="home-search" readonly placeholder="搜索好物、品牌、品类" />
+    </div>
+  </div>
+  <div class="carousel home-carousel" id="carousel"></div>
+  <p class="home-sync-hint">轮播：<b>首页运营</b>（<code>demo_banners</code>）。主推与列表条数：<b>首页运营</b>（<code>demo_home_list</code>）。是否进首页：<b>商品编辑</b>勾选「在首页展示」。分类 / 销量：<b>分类与商品管理</b>。</p>
+  <div class="home-cat-scroll-wrap">
+    <div class="home-cat-scroll" id="home-cat-scroll"></div>
+  </div>
+  <div class="home-sec-head">
+    <div class="hleft">
+      <span class="home-sec-tag">主推</span>
+      <span class="home-sec-title">本区销量第一</span>
+    </div>
+    <span class="home-sec-more" onclick="show('category')">进分类 ›</span>
+  </div>
+  <div id="home-featured"></div>
+  <div class="home-sec-head" style="padding-top:6px">
+    <div class="hleft">
+      <span class="home-sec-tag" style="background:#111">列表</span>
+      <span class="home-sec-title">其余在售</span>
+    </div>
+    <span class="home-sec-more" onclick="show('search')">搜索 ›</span>
+  </div>
+  <div class="home-grid-3" id="home-goods"></div>
+  <p class="home-sync-hint" id="home-grid-hint" style="display:none;margin-top:4px"></p>
+  <div style="padding:0 12px 16px;text-align:center">
+    <button class="btn btn-outline" id="home-loadmore" style="width:100%;border-radius:12px;padding:10px">加载更多</button>
+  </div>
 </div>
 
 <!-- 分类页 -->
 <div class="page" id="page-category">
-<div class="search"><input placeholder="搜索商品"></div>
+<div class="search"><input id="category-search" placeholder="搜索商品（回车搜索）" onclick="show('search')"></div>
 <div class="category">
-<div class="category-left">
-<div class="category-item active">农产品</div>
-<div class="category-item">生鲜水果</div>
-<div class="category-item">粮油副食</div>
-</div>
+<div class="category-left" id="category-left"></div>
 <div class="category-right">
-<div class="goods-list">
-<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">有机蔬菜包</div><div class="goods-price">¥29</div></div></div>
-<div class="goods-item"><div class="goods-img">商品</div><div class="goods-info"><div class="goods-name">农家蜂蜜 500g</div><div class="goods-price">¥39</div></div></div>
-</div>
+<div class="goods-list" id="category-goods"></div>
 </div>
 </div>
 </div>
 
 <!-- 购物车页 -->
 <div class="page" id="page-cart">
-<div class="cart-item"><div class="cart-img"></div><div class="cart-info"><div class="cart-name">五常大米 10kg</div><div class="cart-price">¥299</div><div class="cart-num"><button>-</button><span>1</span><button>+</button></div></div></div>
-<div class="cart-item"><div class="cart-img"></div><div class="cart-info"><div class="cart-name">红富士苹果 5kg</div><div class="cart-price">¥599</div><div class="cart-num"><button>-</button><span>1</span><button>+</button></div></div></div>
-<div class="cart-footer"><div class="cart-total">合计: <span>¥898</span></div><button class="btn" onclick="show('confirm')">结算</button></div>
+  <div id="cart-body" style="padding-bottom:60px"></div>
+  <div class="cart-footer" style="gap:10px">
+    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="cart-checkall" /> 全选</label>
+    <button class="btn btn-outline" id="cart-clear-invalid" style="padding:6px 10px;border-radius:8px;display:none">清理失效</button>
+    <div class="cart-total">合计: <span id="cart-total">¥0</span></div>
+    <button class="btn" id="cart-checkout">结算</button>
+  </div>
 </div>
 
 <!-- 我的页 -->
@@ -162,166 +318,231 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- 搜索页 -->
 <div class="page" id="page-search">
-  <div class="search"><input placeholder="搜索商品"></div>
+  <div class="search"><input id="search-input" placeholder="搜索商品（回车搜索）"></div>
+  <div id="search-suggest" class="section" style="display:none"></div>
   <div class="section">
     <div class="section-title">热门搜索</div>
-    <span class="tag">手机</span><span class="tag">耳机</span><span class="tag">手表</span><span class="tag">有机蔬菜</span>
+    <div id="hot-tags"></div>
   </div>
   <div class="section">
-    <div class="section-title">搜索历史</div>
-    <span class="tag">五常大米</span><span class="tag">红富士苹果 5kg</span>
+    <div class="section-title">搜索历史 <span class="link" id="clear-history" style="float:right;font-weight:400">清空</span></div>
+    <div id="history-tags"></div>
   </div>
 </div>
 
-<!-- 商品详情页 -->
+<!-- 搜索结果页 -->
+<div class="page" id="page-search-result">
+  <div class="search"><input id="search-result-input" placeholder="搜索商品（回车搜索）"></div>
+  <div style="padding:0 10px 10px">
+    <span class="chip active" data-sort="default">综合</span>
+    <span class="chip" data-sort="price_asc">价格↑</span>
+    <span class="chip" data-sort="price_desc">价格↓</span>
+    <span class="chip" data-sort="sales_desc">销量</span>
+  </div>
+  <div id="search-result-list"></div>
+</div>
+
+<!-- 区域选择弹窗 -->
+<div class="overlay" id="region-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">选择区域</div>
+    <div class="overlay-tags" id="region-tags"></div>
+    <div class="overlay-actions">
+      <button class="btn btn-outline" id="region-cancel">取消</button>
+      <button class="btn" id="region-ok">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 商品详情页：上部可滚动，底栏固定 -->
 <div class="page" id="page-detail">
-  <div class="goods-img" style="height:260px;margin:10px;border-radius:8px">商品大图</div>
-  <div class="section">
-    <div class="goods-price" style="font-size:22px">¥299</div>
-    <div style="margin-top:8px;color:#333">五常大米 10kg 东北五常大米</div>
-    <div style="margin-top:6px;color:#999;font-size:12px">商品描述内容...</div>
+  <div class="detail-scroll">
+    <div class="goods-img" id="detail-cover" style="height:260px;margin:10px;border-radius:8px;background-color:#eee"></div>
+    <div class="section">
+      <div class="goods-price" style="font-size:22px">¥299</div>
+      <div id="detail-title" style="margin-top:8px;color:#333">五常大米 10kg 东北五常大米</div>
+      <div id="detail-desc" style="margin-top:6px;color:#999;font-size:12px">商品描述内容...</div>
+    </div>
+    <div class="section">
+      <div class="section-title">规格（SKU）</div>
+      <div id="detail-sku"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">数量</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:0 2px">
+        <button class="btn btn-outline" id="detail-qty-minus" style="width:36px;height:36px;padding:0;border-radius:10px">-</button>
+        <div id="detail-qty" style="min-width:28px;text-align:center;font-weight:700">1</div>
+        <button class="btn btn-outline" id="detail-qty-plus" style="width:36px;height:36px;padding:0;border-radius:10px">+</button>
+        <span class="muted" style="font-size:12px">库存：<span id="detail-stock">0</span></span>
+      </div>
+    </div>
+    <div style="height:8px"></div>
   </div>
-  <div class="section">
-    <div class="section-title">规格</div>
-    <span class="tag" style="background:#ffeceb;color:#e4393c">5kg装</span>
-    <span class="tag">10kg装</span>
-  </div>
-  <div class="subpage-footer">
-    <button class="btn" onclick="show('confirm')">立即购买</button>
+  <div class="detail-footer">
+    <button class="btn btn-outline" id="detail-addcart">加入购物车</button>
+    <button class="btn" id="detail-buynow">立即购买</button>
   </div>
 </div>
 
 <!-- 订单确认页 -->
 <div class="page" id="page-confirm">
-  <div class="section">
-    <div class="section-title">收货地址</div>
-    <div style="color:#333"><b>张三</b> 138****8888</div>
-    <div style="color:#666;font-size:12px;margin-top:4px">上海市浦东新区张江路123号</div>
+  <div class="section" id="confirm-address" style="cursor:pointer">
+    <div class="section-title">收货地址 <span class="link" style="float:right;font-weight:400">选择</span></div>
+    <div id="confirm-address-text" class="muted">请选择收货地址</div>
+    <div class="muted" style="font-size:12px;margin-top:8px">提示：地址以下单时快照为准（演示）</div>
   </div>
   <div class="section">
     <div class="section-title">商品信息</div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div class="cart-img" style="width:60px;height:60px"></div>
-      <div style="flex:1">
-        <div style="color:#333">五常大米 10kg</div>
-        <div class="goods-price" style="margin-top:4px">¥299</div>
-      </div>
-      <div style="color:#666">×1</div>
+    <div id="confirm-items"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">费用明细（MVP 占位）</div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;color:#333"><span>商品小计</span><span id="confirm-subtotal">¥0</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;color:#333"><span>运费</span><span id="confirm-ship">¥0</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;color:#333"><span>优惠</span><span id="confirm-discount">-¥0</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0 0;margin-top:8px;border-top:1px solid #f5f5f5;font-weight:800">
+      <span>应付合计</span><span id="confirm-pay" style="color:#e4393c">¥0</span>
     </div>
   </div>
-  <div class="subpage-footer" style="gap:10px">
-    <div style="flex:1;display:flex;align-items:center;justify-content:flex-end">合计：<span style="color:#e4393c;font-weight:700;margin-left:6px">¥299</span></div>
-    <button class="btn" style="width:auto" onclick="alert('这里演示支付流程')">去支付</button>
+  <div class="subpage-footer" style="display:flex;gap:10px;align-items:center">
+    <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;color:#666;font-size:12px">合计</div>
+    <div style="font-size:16px;font-weight:900;color:#e4393c;margin-right:6px" id="confirm-total">¥0</div>
+    <button class="btn" id="confirm-submit" style="width:auto">提交订单</button>
   </div>
+</div>
+
+<!-- 支付结果页（演示） -->
+<div class="page" id="page-pay-success">
+  <div class="section" style="text-align:center;padding:22px 12px">
+    <div style="font-size:18px;font-weight:800;color:#111">支付成功</div>
+    <div class="muted" style="margin-top:8px;font-size:12px">订单已更新为「待发货」</div>
+  </div>
+  <div class="subpage-footer" style="display:flex;gap:10px">
+    <button class="btn btn-outline" style="flex:1" onclick="show('orders')">查看订单</button>
+    <button class="btn" style="flex:1" onclick="show('home')">返回首页</button>
+  </div>
+</div>
+<div class="page" id="page-pay-pending">
+  <div class="section" style="text-align:center;padding:22px 12px">
+    <div style="font-size:18px;font-weight:800;color:#111">支付结果确认中</div>
+    <div class="muted" style="margin-top:8px;font-size:12px">可稍后到「我的订单」查看状态</div>
+  </div>
+  <div class="subpage-footer"><button class="btn" style="width:100%" onclick="show('orders')">去订单列表</button></div>
+</div>
+<div class="page" id="page-pay-fail">
+  <div class="section" style="text-align:center;padding:22px 12px">
+    <div style="font-size:18px;font-weight:800;color:#111">支付失败</div>
+    <div class="muted" style="margin-top:8px;font-size:12px">可返回订单详情重试支付（演示）</div>
+  </div>
+  <div class="subpage-footer"><button class="btn" style="width:100%" onclick="show('orders')">返回订单</button></div>
+</div>
+<div class="page" id="page-pay-cancel">
+  <div class="section" style="text-align:center;padding:22px 12px">
+    <div style="font-size:18px;font-weight:800;color:#111">已取消支付</div>
+    <div class="muted" style="margin-top:8px;font-size:12px">订单仍为「待付款」，可继续支付</div>
+  </div>
+  <div class="subpage-footer"><button class="btn" style="width:100%" onclick="show('orders')">返回订单</button></div>
 </div>
 
 <!-- 订单列表页 -->
 <div class="page" id="page-orders">
-  <div class="section">
-    <div class="section-title">我的订单</div>
-    <div class="list-row" onclick="show('order-detail')">
-      <div>
-        <div style="color:#333">订单号：202604131234</div>
-        <div style="color:#999;font-size:12px;margin-top:4px">五常大米 10kg · ¥299</div>
-      </div>
-      <div style="color:#e4393c">待付款</div>
-    </div>
-    <div class="list-row">
-      <div>
-        <div style="color:#333">订单号：202604131233</div>
-        <div style="color:#999;font-size:12px;margin-top:4px">红富士苹果 5kg · ¥599</div>
-      </div>
-      <div style="color:#4caf50">待发货</div>
-    </div>
+  <div class="order-tabs" id="order-tabs">
+    <div class="order-tab2 active" data-status="ALL">全部</div>
+    <div class="order-tab2" data-status="PENDING_PAY">待付款</div>
+    <div class="order-tab2" data-status="PENDING_SHIP">待发货</div>
+    <div class="order-tab2" data-status="SHIPPED">待收货</div>
+    <div class="order-tab2" data-status="FINISHED">已完成</div>
+    <div class="order-tab2" data-status="CANCELED">已取消</div>
   </div>
+  <div id="order-list"></div>
 </div>
 
 <!-- 订单详情页 -->
 <div class="page" id="page-order-detail">
   <div class="section">
     <div class="section-title">订单信息</div>
-    <div style="color:#333">订单号：202604131234</div>
-    <div style="color:#666;font-size:12px;margin-top:4px">下单时间：2026-04-13 12:00</div>
-    <div style="margin-top:6px;color:#e4393c">状态：待付款</div>
+    <div id="od-no" style="color:#333"></div>
+    <div id="od-time" style="color:#666;font-size:12px;margin-top:4px"></div>
+    <div id="od-status" style="margin-top:6px;color:#e4393c"></div>
   </div>
   <div class="section">
     <div class="section-title">收货信息</div>
-    <div style="color:#333"><b>张三</b> 138****8888</div>
-    <div style="color:#666;font-size:12px;margin-top:4px">上海市浦东新区张江路123号</div>
+    <div id="od-address" style="color:#333"></div>
   </div>
   <div class="section">
     <div class="section-title">商品信息</div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div class="cart-img" style="width:60px;height:60px"></div>
-      <div style="flex:1">
-        <div style="color:#333">五常大米 10kg</div>
-        <div class="goods-price" style="margin-top:4px">¥299</div>
-      </div>
-      <div style="color:#666">×1</div>
-    </div>
+    <div id="od-items"></div>
   </div>
+  <div class="subpage-footer" id="od-actions" style="display:flex;gap:10px;justify-content:flex-end"></div>
 </div>
 
 <!-- 地址列表页 -->
 <div class="page" id="page-address">
-  <div class="section">
-    <div class="section-title">收货地址</div>
-    <div class="list-row">
-      <div>
-        <div style="color:#333"><b>张三</b> 138****8888</div>
-        <div style="color:#999;font-size:12px;margin-top:4px">上海市浦东新区张江路123号</div>
-      </div>
-      <div style="color:#e4393c;font-size:12px;border:1px solid #e4393c;padding:2px 6px;border-radius:2px">默认</div>
-    </div>
-    <div class="list-row" style="justify-content:center;border-bottom:none">
-      <button class="btn" onclick="show('address-edit')">+ 新增收货地址</button>
-    </div>
+  <div class="addr-list" id="addr-list"></div>
+  <div style="padding:0 10px 16px">
+    <button class="btn btn-outline" id="addr-add" style="width:100%">+ 新增收货地址</button>
   </div>
 </div>
 
-<!-- 地址编辑页 -->
+<!-- 地址编辑页（表单 + 字段级校验提示） -->
 <div class="page" id="page-address-edit">
-  <div class="section">
+  <form id="address-form" class="section" novalidate>
     <div class="section-title">新增收货地址</div>
-    <div class="form-group">
-      <label>收货人</label>
-      <input class="form-control" id="addr-name" placeholder="请输入收货人姓名" />
+    <div class="form-group" id="addr-grp-name">
+      <label for="addr-name">收货人</label>
+      <input class="form-control" id="addr-name" name="name" autocomplete="name" placeholder="请输入收货人姓名" required />
+      <div class="form-field-error" id="addr-err-name"></div>
     </div>
-    <div class="form-group">
-      <label>手机号</label>
-      <input class="form-control" id="addr-phone" placeholder="请输入手机号" />
+    <div class="form-group" id="addr-grp-phone">
+      <label for="addr-phone">手机号</label>
+      <input class="form-control" id="addr-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="请输入手机号" required />
+      <div class="form-field-error" id="addr-err-phone"></div>
     </div>
     <div class="form-grid">
-      <div>
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:6px">省份</label>
-        <select class="form-control" id="addr-province">
+      <div class="form-group" id="addr-grp-province">
+        <label for="addr-province">省份</label>
+        <select class="form-control" id="addr-province" name="province" required>
           <option value="">请选择省份</option>
           <option>上海市</option>
           <option>江苏省</option>
           <option>浙江省</option>
         </select>
+        <div class="form-field-error" id="addr-err-province"></div>
       </div>
-      <div>
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:6px">城市</label>
-        <select class="form-control" id="addr-city">
+      <div class="form-group" id="addr-grp-city">
+        <label for="addr-city">城市</label>
+        <select class="form-control" id="addr-city" name="city" required>
           <option value="">请选择城市</option>
           <option>上海市</option>
           <option>南京市</option>
           <option>杭州市</option>
         </select>
+        <div class="form-field-error" id="addr-err-city"></div>
       </div>
     </div>
-    <div class="form-group">
-      <label>详细地址</label>
-      <textarea class="form-control" id="addr-detail" rows="3" placeholder="请输入详细地址"></textarea>
+    <div class="form-group" id="addr-grp-district">
+      <label for="addr-district">区/县</label>
+      <select class="form-control" id="addr-district" name="district" required>
+        <option value="">请选择区/县</option>
+        <option>浦东新区</option>
+        <option>黄浦区</option>
+        <option>鼓楼区</option>
+        <option>西湖区</option>
+      </select>
+      <div class="form-field-error" id="addr-err-district"></div>
+    </div>
+    <div class="form-group" id="addr-grp-detail">
+      <label for="addr-detail">详细地址</label>
+      <textarea class="form-control" id="addr-detail" name="detail" rows="3" placeholder="请输入详细地址" required></textarea>
+      <div class="form-field-error" id="addr-err-detail"></div>
     </div>
     <div class="checkbox-row">
-      <input type="checkbox" id="addr-default" />
+      <input type="checkbox" id="addr-default" name="isDefault" />
       <label for="addr-default" style="margin:0;cursor:pointer">设为默认地址</label>
     </div>
-  </div>
+  </form>
   <div class="subpage-footer">
-    <button class="btn" onclick="saveAddress()">保存</button>
+    <button type="submit" class="btn" form="address-form" id="addr-submit-btn">保存</button>
   </div>
 </div>
 
@@ -339,6 +560,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="admin-sidebar">
     <div class="admin-title">商城管理后台</div>
     <div class="admin-menu-item active" onclick="switchAdminMenu(this,'dashboard')">数据概览</div>
+    <div class="admin-menu-item" onclick="switchAdminMenu(this,'homeops')">首页运营</div>
     <div class="admin-menu-item" onclick="switchAdminMenu(this,'products')">商品管理</div>
     <div class="admin-menu-item" onclick="switchAdminMenu(this,'categories')">分类管理</div>
     <div class="admin-menu-item" onclick="switchAdminMenu(this,'orders')">订单管理</div>
@@ -352,160 +574,177 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div style="font-weight:700;color:#333">后台演示</div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-outline" onclick="showMiniProgram()">返回小程序</button>
-        <button class="btn" onclick="showProductModal()">+ 添加商品</button>
+        <button class="btn" type="button" onclick="adminOpenProductEditor(null)">+ 添加商品</button>
       </div>
     </div>
     <div class="admin-content">
       <div class="admin-page active" id="admin-dashboard">
         <div class="admin-stats">
-          <div class="stat-card purple"><div>今日订单</div><div class="stat-num">128</div></div>
-          <div class="stat-card green"><div>今日销售额</div><div class="stat-num">¥12,890</div></div>
-          <div class="stat-card red"><div>待发货</div><div class="stat-num">35</div></div>
-          <div class="stat-card orange"><div>用户数</div><div class="stat-num">1,234</div></div>
+          <div class="stat-card purple"><div>今日订单</div><div class="stat-num" id="adm-dash-orders">0</div></div>
+          <div class="stat-card green"><div>今日销售额</div><div class="stat-num" id="adm-dash-sales">¥0</div></div>
+          <div class="stat-card red"><div>待发货</div><div class="stat-num" id="adm-dash-ship">0</div></div>
+          <div class="stat-card orange"><div>用户数</div><div class="stat-num" id="adm-dash-users">0</div></div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:14px;margin-top:14px">
+          <div class="section-title">在售商品数</div>
+          <div style="font-size:26px;font-weight:800;color:#e4393c" id="adm-dash-skus">0</div>
+          <div class="muted" style="font-size:12px;margin-top:6px">含多规格 SKU；与「商品管理」数据同源</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:14px;margin-top:14px">
+          <div class="section-title">最近订单（与小程序同源）</div>
+          <table class="admin-table" style="margin-top:8px">
+            <thead><tr><th>订单号</th><th style="width:88px">金额</th><th style="width:88px">状态</th><th>时间</th></tr></thead>
+            <tbody id="adm-dash-orders-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-page" id="admin-homeops">
+        <div class="muted" style="font-size:12px;margin-bottom:10px;line-height:1.65">
+          <b>与小程序首页对应：</b>①「轮播」→ <code>demo_banners</code>。②「主推 + 列表条数上限」→ <code>demo_home_list</code>（按区域）。③ 分类横滑 →「分类管理」。④ 商品资料与「是否在首页展示」→「商品管理」编辑里勾选（<code>showOnHome</code>）；仅勾选的商品进入首页主推/列表候选，再按销量与条数上限截取。
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+          <label style="font-size:13px;color:#333">区域</label>
+          <select id="admin-banner-region" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;min-width:160px;font-size:13px"></select>
+          <button type="button" class="btn" onclick="adminBannerAdd()">+ 新增轮播</button>
+          <button type="button" class="btn btn-outline" onclick="adminBannersResetDefaults()">恢复默认 Banner</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:44px">序</th>
+              <th>主标题</th>
+              <th style="width:72px">素材</th>
+              <th style="width:88px">跳转</th>
+              <th style="width:200px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="admin-banner-body"></tbody>
+        </table>
+        <div style="background:#fff;border-radius:10px;padding:14px;margin-top:16px;border:1px solid #eee">
+          <div class="section-title" style="margin-bottom:6px">主推位（与小程序「主推 / 列表」联动）</div>
+          <p class="muted" style="font-size:12px;line-height:1.6;margin-bottom:12px">
+            规则说明：<b>自动主推</b>：当前「区域 + 分类」下在售商品按 <code>sales</code> 降序，第 1 个上大卡。<b>指定主推</b>：大卡固定所选商品（须可售）；分类筛不到时临时退回自动。<b>列表区</b>：其余商品仍按销量排序，但<strong>只取前 N 条</strong>进入首页三列（N 见下），超出部分不展示、不无限加载；完整选购请走「分类」或「搜索」。
+          </p>
+          <div class="form-row" style="margin-top:0">
+            <label style="font-size:13px">主推规则</label>
+            <select id="admin-home-featured-mode" style="width:100%;max-width:360px;padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px">
+              <option value="sales">自动：按销量取第一</option>
+              <option value="manual">指定：固定主推商品</option>
+            </select>
+          </div>
+          <div class="form-row" id="admin-home-featured-manual-wrap" style="margin-top:10px">
+            <label style="font-size:13px">指定商品（上架且在上方所选区域可售）</label>
+            <select id="admin-home-featured-pid" style="width:100%;max-width:480px;padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px"></select>
+          </div>
+          <div class="form-row" style="margin-top:12px">
+            <label style="font-size:13px">列表区最多商品数（不含主推大卡）</label>
+            <input id="admin-home-grid-max" type="number" min="9" max="99" step="1" style="width:120px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px" />
+            <p class="muted" style="font-size:11px;margin-top:6px;line-height:1.5">在「当前区域 + 当前小程序里选的分类」下，去掉主推后按销量排队，<strong>只展示前 N 个</strong>；默认 24。范围 9～99。</p>
+          </div>
+          <div style="margin-top:14px">
+            <button type="button" class="btn" onclick="adminSaveHomeListConfig()">保存首页列表配置</button>
+          </div>
         </div>
       </div>
 
       <div class="admin-page" id="admin-products">
-        <table class="admin-table" style="margin-top:12px">
+        <div class="muted" style="font-size:12px;margin-bottom:8px">编辑会同步到小程序商品列表；价格/库存以 SKU 为准。「首页」列表示是否参与小程序首页主推与列表池（商品编辑里勾选）。</div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <label for="admin-products-category-filter" style="font-size:13px;color:#333;white-space:nowrap">分类</label>
+          <select id="admin-products-category-filter" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;min-width:180px;font-size:13px" onchange="renderAdminProducts()"></select>
+        </div>
+        <table class="admin-table" style="margin-top:4px">
           <thead>
             <tr>
-              <th style="width:60px">ID</th>
+              <th style="width:52px">图</th>
+              <th style="width:100px">商品ID</th>
               <th>商品名称</th>
-              <th style="width:90px">分类</th>
-              <th style="width:90px">价格</th>
-              <th style="width:90px">库存</th>
-              <th style="width:90px">状态</th>
-              <th style="width:180px">操作</th>
+              <th style="width:88px">分类</th>
+              <th style="width:80px">价格</th>
+              <th style="width:72px">库存</th>
+              <th style="width:72px">状态</th>
+              <th style="width:64px">首页</th>
+              <th style="width:100px">操作</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>1</td><td>五常大米 10kg</td><td>农产品</td><td>¥299</td><td>100</td>
-              <td><span class="pill on">上架</span></td>
-              <td class="table-actions">
-                <button class="table-btn btn-outline" onclick="editProduct(1)">编辑</button>
-                <button class="table-btn btn-danger" onclick="toggleProduct(1)">下架</button>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td><td>红富士苹果 5kg</td><td>农产品</td><td>¥599</td><td>50</td>
-              <td><span class="pill on">上架</span></td>
-              <td class="table-actions">
-                <button class="table-btn btn-outline" onclick="editProduct(2)">编辑</button>
-                <button class="table-btn btn-danger" onclick="toggleProduct(2)">下架</button>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td><td>新鲜草莓 2盒</td><td>农产品</td><td>¥399</td><td>80</td>
-              <td><span class="pill off">下架</span></td>
-              <td class="table-actions">
-                <button class="table-btn btn-outline" onclick="editProduct(3)">编辑</button>
-                <button class="table-btn btn-success" onclick="toggleProduct(3)">上架</button>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="admin-products-body"></tbody>
         </table>
       </div>
 
       <div class="admin-page" id="admin-orders">
-        <table class="admin-table" style="margin-top:12px">
+        <div class="muted" style="font-size:12px;margin-bottom:8px">与前台「我的订单」同一数据源；此处发货会更新用户端状态。</div>
+        <table class="admin-table" style="margin-top:4px">
           <thead>
             <tr>
-              <th>订单号</th><th style="width:90px">用户</th><th>商品</th><th style="width:90px">金额</th><th style="width:90px">状态</th><th style="width:170px">时间</th><th style="width:120px">操作</th>
+              <th>订单号</th><th style="width:80px">用户</th><th>商品</th><th style="width:80px">金额</th><th style="width:80px">状态</th><th style="width:148px">时间</th><th style="width:160px">操作</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>202604131234</td><td>张三</td><td>五常大米 10kg</td><td>¥299</td><td><span class="pill on">待付款</span></td><td>2026-04-13 12:00</td>
-              <td class="table-actions"><button class="table-btn btn-outline" onclick="alert('这里演示订单详情')">详情</button></td>
-            </tr>
-            <tr>
-              <td>202604131233</td><td>李四</td><td>红富士苹果 5kg</td><td>¥599</td><td><span class="pill ok">待发货</span></td><td>2026-04-13 11:30</td>
-              <td class="table-actions">
-                <button class="table-btn btn-outline" onclick="alert('这里演示订单详情')">详情</button>
-                <button class="table-btn btn-success" onclick="alert('这里演示发货')">发货</button>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="admin-orders-body"></tbody>
         </table>
       </div>
 
       <div class="admin-page" id="admin-users">
-        <table class="admin-table" style="margin-top:12px">
+        <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center">
+          <button type="button" class="btn btn-outline" onclick="adminAddUser()">+ 新增用户</button>
+          <span class="muted" style="font-size:12px">演示数据，仅存本地</span>
+        </div>
+        <table class="admin-table" style="margin-top:4px">
           <thead>
             <tr>
-              <th style="width:60px">ID</th><th>昵称</th><th style="width:120px">手机号</th><th style="width:80px">订单数</th><th style="width:110px">消费金额</th><th style="width:140px">注册时间</th>
+              <th style="width:56px">ID</th><th>昵称</th><th style="width:120px">手机号</th><th style="width:72px">订单数</th><th style="width:100px">消费</th><th style="width:120px">注册</th><th style="width:140px">操作</th>
             </tr>
           </thead>
-          <tbody>
-            <tr><td>1</td><td>微信用户</td><td>138****8888</td><td>5</td><td>¥1,234</td><td>2026-01-01</td></tr>
-            <tr><td>2</td><td>用户002</td><td>139****9999</td><td>3</td><td>¥567</td><td>2026-02-15</td></tr>
-          </tbody>
+          <tbody id="admin-users-body"></tbody>
         </table>
       </div>
 
-      <!-- 分类管理 -->
       <div class="admin-page" id="admin-categories">
-        <div style="margin-bottom:16px"><button class="btn" onclick="alert('新增分类')">+ 新增分类</button></div>
+        <div style="margin-bottom:12px"><button type="button" class="btn" onclick="adminAddCategory()">+ 新增分类</button></div>
         <table class="admin-table">
-          <thead><tr><th style="width:60px">ID</th><th>分类名称</th><th style="width:100px">商品数</th><th style="width:100px">状态</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr><td>1</td><td>农产品</td><td>128</td><td><span class="pill on">启用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
-            <tr><td>2</td><td>生鲜水果</td><td>256</td><td><span class="pill on">启用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
-            <tr><td>3</td><td>粮油副食</td><td>89</td><td><span class="pill on">启用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
-            <tr><td>4</td><td>土特产</td><td>67</td><td><span class="pill off">禁用</span></td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-success">启用</button></td></tr>
-          </tbody>
+          <thead><tr><th style="width:72px">ID</th><th>分类名称</th><th style="width:88px">商品数</th><th style="width:88px">状态</th><th style="width:200px">操作</th></tr></thead>
+          <tbody id="admin-categories-body"></tbody>
         </table>
       </div>
 
-      <!-- 区域管理 -->
       <div class="admin-page" id="admin-regions">
-        <div style="margin-bottom:16px"><button class="btn" onclick="alert('新增区域')">+ 新增区域</button></div>
+        <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn" onclick="adminAddRegion()">+ 新增区域</button>
+          <span class="muted" style="font-size:12px">新区域需在「配置商品」中为商品勾选后才在该区上架</span>
+        </div>
+        <div class="muted" style="font-size:12px;margin-bottom:8px">禁用区域后，小程序区域选择器不再展示；已选区域会自动纠正。</div>
         <table class="admin-table">
-          <thead><tr><th style="width:60px">ID</th><th>区域名称</th><th style="width:120px">区域编码</th><th style="width:100px">商品数</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr><td>1</td><td>华东</td><td>EC</td><td>320</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
-            <tr><td>2</td><td>华北</td><td>NC</td><td>180</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
-            <tr><td>3</td><td>华南</td><td>SC</td><td>256</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
-            <tr><td>4</td><td>东北</td><td>NE</td><td>95</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-outline">配置商品</button></td></tr>
-          </tbody>
+          <thead><tr><th style="width:72px">编码</th><th>区域名称</th><th style="width:88px">在售商品数</th><th style="width:220px">操作</th></tr></thead>
+          <tbody id="admin-regions-body"></tbody>
         </table>
       </div>
 
-      <!-- 库存管理 -->
       <div class="admin-page" id="admin-inventory">
         <div class="admin-stats">
-          <div class="stat-card purple"><div>总SKU</div><div class="stat-num">856</div></div>
-          <div class="stat-card green"><div>库存充足</div><div class="stat-num">720</div></div>
-          <div class="stat-card red"><div>库存预警</div><div class="stat-num">35</div></div>
-          <div class="stat-card orange"><div>已售罄</div><div class="stat-num">12</div></div>
+          <div class="stat-card purple"><div>总SKU</div><div class="stat-num" id="adm-inv-total">0</div></div>
+          <div class="stat-card green"><div>库存充足</div><div class="stat-num" id="adm-inv-ok">0</div></div>
+          <div class="stat-card red"><div>库存预警</div><div class="stat-num" id="adm-inv-warn">0</div></div>
+          <div class="stat-card orange"><div>已售罄</div><div class="stat-num" id="adm-inv-zero">0</div></div>
         </div>
         <table class="admin-table" style="margin-top:16px">
-          <thead><tr><th>商品名称</th><th>SKU规格</th><th style="width:100px">库存</th><th style="width:100px">预警阈值</th><th style="width:100px">状态</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr><td>五常大米 10kg</td><td>5kg袋</td><td>100</td><td>20</td><td><span class="pill ok">正常</span></td><td class="table-actions"><button class="table-btn btn-outline">补货</button></td></tr>
-            <tr><td>五常大米 10kg</td><td>10kg袋</td><td>8</td><td>20</td><td><span class="pill on">预警</span></td><td class="table-actions"><button class="table-btn btn-outline">补货</button></td></tr>
-            <tr><td>红富士苹果 5kg</td><td>优级果</td><td>0</td><td>10</td><td><span class="pill off">售罄</span></td><td class="table-actions"><button class="table-btn btn-success">立即补货</button></td></tr>
-          </tbody>
+          <thead><tr><th>商品</th><th>SKU</th><th style="width:88px">库存</th><th style="width:88px">预警</th><th style="width:88px">状态</th><th style="width:120px">操作</th></tr></thead>
+          <tbody id="admin-inventory-body"></tbody>
         </table>
       </div>
 
-      <!-- 系统设置 -->
       <div class="admin-page" id="admin-settings">
         <div style="background:#fff;border-radius:10px;padding:16px">
-          <div class="section-title">支付配置</div>
-          <div class="form-group"><label class="form-label">微信商户号</label><input type="text" class="form-control" placeholder="请输入商户号"></div>
-          <div class="form-group"><label class="form-label">微信API密钥</label><input type="text" class="form-control" placeholder="请输入API密钥"></div>
-          <div style="margin-top:16px"><button class="btn">保存配置</button></div>
+          <div class="section-title">支付配置（本地演示）</div>
+          <div class="form-group"><label class="form-label">微信商户号</label><input type="text" class="form-control" id="adm-pay-mchid" placeholder="请输入商户号" /></div>
+          <div class="form-group"><label class="form-label">微信 APIv3 密钥 / 证书序列号（占位）</label><input type="text" class="form-control" id="adm-pay-secret" placeholder="演示字段，仅存本地" /></div>
+          <div style="margin-top:12px"><button type="button" class="btn" onclick="adminSavePaySettings()">保存支付配置</button></div>
         </div>
         <div style="background:#fff;border-radius:10px;padding:16px;margin-top:16px">
           <div class="section-title">管理员账号</div>
+          <div style="margin-bottom:10px"><button type="button" class="btn btn-outline" onclick="adminAddAccount()">+ 新增管理员</button></div>
           <table class="admin-table">
-            <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>最后登录</th><th>操作</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td>admin</td><td><span class="pill on">超级管理员</span></td><td>2026-04-13 10:00</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button></td></tr>
-              <tr><td>2</td><td>manager01</td><td><span class="pill">运营</span></td><td>2026-04-12 15:30</td><td class="table-actions"><button class="table-btn btn-outline">编辑</button><button class="table-btn btn-danger">禁用</button></td></tr>
-            </tbody>
+            <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>状态</th><th>最后登录</th><th style="width:160px">操作</th></tr></thead>
+            <tbody id="admin-accounts-body"></tbody>
           </table>
         </div>
       </div>
@@ -516,23 +755,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <!-- 商品编辑弹窗 -->
 <div class="modal" id="product-modal">
   <div class="modal-content" style="max-width:600px;padding:20px">
-    <div style="font-size:18px;font-weight:700;color:#333;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:12px">商品编辑</div>
+    <div id="product-modal-title" style="font-size:18px;font-weight:700;color:#333;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:12px">商品编辑</div>
+    <input type="hidden" id="product-edit-id" value="" />
     
     <!-- 商品图片 -->
     <div class="form-group">
-      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">商品图片</label>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
-        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
-        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
-        <div style="width:80px;height:80px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;cursor:pointer">+ 点击上传</div>
-      </div>
+      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">主图 URL</label>
+      <input id="product-cover" class="form-control" placeholder="https://... 留空则使用系统默认配图" />
+      <div class="muted" style="font-size:12px;margin-top:6px">下方为预览；多图上传可在正式版再接入。</div>
+      <div id="product-cover-preview" class="goods-img" style="width:120px;height:120px;margin-top:10px;border-radius:10px"></div>
     </div>
     
     <!-- 基本信息 -->
     <div class="form-group">
       <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">商品名称 <span style="color:#e4393c">*</span></label>
       <input id="product-name" value="五常大米 10kg" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="form-group" style="padding:0">
+        <label style="display:block;font-size:12px;color:#555;margin-bottom:6px">营销标签</label>
+        <input id="product-tag" class="form-control" placeholder="如：限时折扣" style="padding:8px 10px;font-size:12px" />
+      </div>
+      <div class="form-group" style="padding:0">
+        <label style="display:block;font-size:12px;color:#555;margin-bottom:6px">划线价（元）</label>
+        <input id="product-line" type="number" class="form-control" placeholder="可选" style="padding:8px 10px;font-size:12px" />
+      </div>
+      <div class="form-group" style="padding:0">
+        <label style="display:block;font-size:12px;color:#555;margin-bottom:6px">促销文案</label>
+        <input id="product-promo-line" class="form-control" placeholder="如：2件9折" style="padding:8px 10px;font-size:12px" />
+      </div>
     </div>
     
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -546,67 +797,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         </select>
       </div>
       <div class="form-group">
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">所属区域</label>
-        <select style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-          <option>全国</option>
-          <option>华东</option>
-          <option>华北</option>
-          <option>华南</option>
-        </select>
-      </div>
-    </div>
-    
-    <!-- 价格 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-      <div class="form-group">
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">售价 <span style="color:#e4393c">*</span></label>
-        <input id="product-price" type="number" value="299" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
-      </div>
-      <div class="form-group">
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">原价</label>
-        <input type="number" value="399" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
-      </div>
-      <div class="form-group">
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">会员价</label>
-        <input type="number" value="279" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
+        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">可售区域</label>
+        <select id="product-region-mode" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px"></select>
       </div>
     </div>
     
     <!-- SKU规格 -->
     <div class="form-group">
-      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">SKU规格管理</label>
+      <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">SKU 规格（价格 / 库存 / 预警）</label>
       <div style="background:#fafafa;border-radius:8px;padding:12px">
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <span style="padding:4px 10px;background:#e4393c;color:#fff;border-radius:4px;font-size:12px">规格: 5kg袋</span>
-          <span style="padding:4px 10px;background:#f5f5f5;border-radius:4px;font-size:12px">10kg袋</span>
-          <button style="padding:4px 10px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:12px">+ 添加规格</button>
+        <div style="margin-bottom:8px">
+          <button type="button" class="table-btn btn-outline" id="product-add-sku">+ 添加规格</button>
         </div>
         <table style="width:100%;font-size:12px">
-          <thead><tr><th>规格</th><th>价格</th><th>库存</th><th>状态</th></tr></thead>
-          <tbody>
-            <tr><td>5kg装</td><td><input type="number" value="299" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><input type="number" value="100" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><span class="pill on">上架</span></td></tr>
-            <tr><td>10kg装</td><td><input type="number" value="299" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><input type="number" value="50" style="width:60px;padding:4px;border:1px solid #ddd;border-radius:4px"></td><td><span class="pill on">上架</span></td></tr>
-          </tbody>
+          <thead><tr><th>规格名</th><th>价格</th><th>库存</th><th>预警</th><th style="width:56px">删</th></tr></thead>
+          <tbody id="product-modal-sku-body"></tbody>
         </table>
-      </div>
-    </div>
-    
-    <!-- 库存 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="form-group">
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">总库存</label>
-        <input id="product-stock" type="number" value="150" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
-      </div>
-      <div class="form-group">
-        <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">库存预警阈值</label>
-        <input type="number" value="20" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" />
       </div>
     </div>
     
     <!-- 商品描述 -->
     <div class="form-group">
       <label style="display:block;font-size:13px;color:#333;margin-bottom:8px">商品描述</label>
-      <textarea rows="4" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:none">五常大米 10kg 东北五常大米，高频振动，深度清洁...</textarea>
+      <textarea id="product-desc" rows="4" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:none" placeholder="卖点、产地、售后说明等"></textarea>
     </div>
     
     <!-- 状态 -->
@@ -617,6 +830,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <option>下架</option>
       </select>
     </div>
+    <div class="checkbox-row" style="padding:10px 10px 0;align-items:flex-start">
+      <input type="checkbox" id="product-show-on-home" checked style="margin-top:2px" />
+      <label for="product-show-on-home" style="margin:0;cursor:pointer;font-size:13px;color:#333;line-height:1.45">
+        在首页展示（参与主推位与「其余在售」候选池；关闭后仍可在分类、搜索、购物车等场景出现）
+      </label>
+    </div>
     
     <div style="display:flex;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid #eee">
       <button class="btn btn-outline" style="flex:1;padding:12px" onclick="closeProductModal()">取消</button>
@@ -624,11 +843,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
   </div>
 </div>
-      </select>
-    </div>
+
+<div class="modal modal-admin" id="admin-order-modal">
+  <div class="modal-content" style="max-width:520px;padding:20px">
+    <div style="font-size:17px;font-weight:700" id="admin-order-modal-title">订单详情</div>
+    <div id="admin-order-modal-body" style="margin-top:12px;font-size:13px;line-height:1.65;color:#333"></div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeProductModal()">取消</button>
-      <button class="btn" onclick="saveProduct()">保存</button>
+      <button type="button" class="btn" onclick="closeAdminOrderModal()">关闭</button>
+    </div>
+  </div>
+</div>
+<div class="modal modal-admin" id="admin-region-products-modal">
+  <div class="modal-content" style="max-width:540px;padding:20px">
+    <div style="font-size:17px;font-weight:700" id="admin-region-modal-title">配置区域商品</div>
+    <p class="muted" style="font-size:12px;margin-top:6px">勾选表示该商品在该区域可售（与商品资料中的区域字段同步）。</p>
+    <div id="admin-region-modal-list" style="max-height:340px;overflow:auto;margin-top:10px"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-outline" onclick="closeAdminRegionModal()">取消</button>
+      <button type="button" class="btn" onclick="adminSaveRegionProducts()">保存</button>
     </div>
   </div>
 </div>
@@ -645,12 +877,1248 @@ var titles = {
   orders:'我的订单',
   'order-detail':'订单详情',
   address:'收货地址',
-  'address-edit':'新增收货地址'
+  'address-edit':'新增收货地址',
+  'pay-success':'支付成功',
+  'pay-pending':'支付确认中',
+  'pay-fail':'支付失败',
+  'pay-cancel':'取消支付'
 };
 var tabs = {home:0, category:1, cart:2, user:3};
 var mainTabs = ['home','category','cart','user'];
 var stack = ['home'];
 var isAdminMode = false;
+
+function storageGet(key, fallback) {
+  try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+}
+function storageSet(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+}
+
+// ====== 数据（演示用，覆盖 PRD 验收用例） ======
+var REGIONS = [
+  { id: 'EC', name: '华东', enabled: true },
+  { id: 'NC', name: '华北', enabled: true },
+  { id: 'SC', name: '华南', enabled: true },
+  { id: 'NE', name: '东北', enabled: true }
+];
+(function initRegionsFromStorage() {
+  var state = storageGet('demo_regions_state', null);
+  if (state && Array.isArray(state) && state.length) {
+    REGIONS.length = 0;
+    state.forEach(function (row) {
+      if (!row || !row.id) return;
+      REGIONS.push({
+        id: String(row.id).trim().toUpperCase(),
+        name: String(row.name || row.id).trim(),
+        enabled: row.enabled !== false
+      });
+    });
+    return;
+  }
+  var s = storageGet('demo_regions_meta', null);
+  if (!s || !Array.isArray(s)) return;
+  s.forEach(function (patch) {
+    var o = REGIONS.find(function (x) { return x.id === patch.id; });
+    if (!o) return;
+    if (typeof patch.name === 'string' && patch.name.trim()) o.name = patch.name.trim();
+    if (patch.enabled === false) o.enabled = false;
+    if (patch.enabled === true) o.enabled = true;
+  });
+})();
+function persistRegionsMeta() {
+  var snap = REGIONS.map(function (r) { return { id: r.id, name: r.name, enabled: r.enabled !== false }; });
+  storageSet('demo_regions_state', snap);
+  storageSet('demo_regions_meta', snap);
+}
+function regionsActive() {
+  return REGIONS.filter(function (r) { return r.enabled !== false; });
+}
+
+var adminCategories = storageGet('demo_admin_categories', [
+  { id: 'c1', name: '农产品', enabled: true, sort: 1 },
+  { id: 'c2', name: '生鲜水果', enabled: true, sort: 2 },
+  { id: 'c3', name: '粮油副食', enabled: true, sort: 3 },
+  { id: 'c4', name: '土特产', enabled: false, sort: 4 }
+]);
+function saveAdminCategories() {
+  storageSet('demo_admin_categories', adminCategories);
+}
+var CATEGORIES = [];
+function refreshCategoriesFromAdmin() {
+  CATEGORIES.length = 0;
+  adminCategories
+    .filter(function (c) { return c.enabled; })
+    .sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); })
+    .forEach(function (c) { CATEGORIES.push(c.name); });
+  if (!CATEGORIES.length) CATEGORIES.push('默认分类');
+}
+refreshCategoriesFromAdmin();
+
+// 商品：region + category + sales + skus（价格/库存以 SKU 为准）
+var PRODUCTS = [
+  {
+    id: 'p_rice',
+    name: '五常大米',
+    category: '粮油副食',
+    sales: 2300,
+    tag: '限时直降',
+    linePrice: 259,
+    promoLine: '2件再减20元',
+    regions: ['NE','EC','NC','SC'],
+    skus: [
+      { id: 'rice_5kg', label: '5kg装', price: 199, stock: 30 },
+      { id: 'rice_10kg', label: '10kg装', price: 299, stock: 20 }
+    ]
+  },
+  {
+    id: 'p_apple',
+    name: '红富士苹果',
+    category: '生鲜水果',
+    sales: 980,
+    tag: '限时折扣',
+    linePrice: 699,
+    promoLine: '',
+    regions: ['EC','NC','SC'],
+    skus: [
+      { id: 'apple_5kg', label: '5kg装', price: 599, stock: 8 }
+    ]
+  },
+  {
+    id: 'p_strawberry',
+    name: '新鲜草莓',
+    category: '生鲜水果',
+    sales: 1200,
+    tag: '人气爆款',
+    linePrice: 459,
+    promoLine: '满199减30',
+    regions: ['EC','SC'],
+    skus: [
+      { id: 'berry_2', label: '2盒装', price: 399, stock: 0 }
+    ]
+  },
+  {
+    id: 'p_eggs',
+    name: '土鸡蛋',
+    category: '农产品',
+    sales: 3400,
+    tag: '营养早餐',
+    linePrice: 129,
+    promoLine: '',
+    regions: ['EC','NC','SC','NE'],
+    skus: [
+      { id: 'egg_30', label: '30枚装', price: 99, stock: 56 }
+    ]
+  },
+  {
+    id: 'p_veg',
+    name: '有机蔬菜包',
+    category: '农产品',
+    sales: 4200,
+    tag: '产地直供',
+    linePrice: 39,
+    promoLine: '买2送1',
+    regions: ['EC','SC'],
+    skus: [
+      { id: 'veg_1', label: '标准包', price: 29, stock: 110 }
+    ]
+  },
+  {
+    id: 'p_honey',
+    name: '农家蜂蜜',
+    category: '农产品',
+    sales: 1500,
+    tag: '滋补季',
+    linePrice: 59,
+    promoLine: '',
+    regions: ['NC','NE','EC'],
+    skus: [
+      { id: 'honey_500', label: '500g', price: 39, stock: 66 }
+    ]
+  }
+];
+
+// 默认商品配图（Unsplash 固定图，与品类对应，便于客户演示；后台可填 URL 覆盖）
+var PRODUCT_COVER_DEFAULTS = {
+  p_rice: 'https://images.unsplash.com/photo-1586201375768-83862c0e59e4?auto=format&w=800&h=800&fit=crop&q=85',
+  p_apple: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&w=800&h=800&fit=crop&q=85',
+  p_strawberry: 'https://images.unsplash.com/photo-1464965911861-aac31c23c1fe?auto=format&w=800&h=800&fit=crop&q=85',
+  p_eggs: 'https://images.unsplash.com/photo-1506976785307-b902aa843359?auto=format&w=800&h=800&fit=crop&q=85',
+  p_veg: 'https://images.unsplash.com/photo-1540420773420-3360872eeb67?auto=format&w=800&h=800&fit=crop&q=85',
+  p_honey: 'https://images.unsplash.com/photo-1471943311614-4662e056b425?auto=format&w=800&h=800&fit=crop&q=85'
+};
+var PRODUCT_COVER_GENERIC = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&w=800&h=800&fit=crop&q=85';
+
+function productCoverUrl(p) {
+  if (!p) return PRODUCT_COVER_GENERIC;
+  var u = (p.cover || p.image || '').trim();
+  if (u) return u;
+  return PRODUCT_COVER_DEFAULTS[p.id] || PRODUCT_COVER_GENERIC;
+}
+function productImgStyle(p, h) {
+  var u = productCoverUrl(p).replace(/'/g, '%27');
+  var extra = h ? 'height:' + h + 'px;' : '';
+  return extra + 'background-image:url(\'' + u + '\');background-size:cover;background-position:center;background-color:#eee';
+}
+
+function getDefaultSku(p) {
+  if (!p || !p.skus || !p.skus.length) return null;
+  return p.skus[0];
+}
+function getSkuById(p, skuId) {
+  if (!p || !p.skus || !p.skus.length) return null;
+  if (!skuId) return getDefaultSku(p);
+  for (var i = 0; i < p.skus.length; i++) if (p.skus[i].id === skuId) return p.skus[i];
+  return getDefaultSku(p);
+}
+function productMinPrice(p) {
+  if (!p || !p.skus || !p.skus.length) return 0;
+  return Math.min.apply(null, p.skus.map(function (s) { return Number(s.price) || 0; }));
+}
+function productTotalStock(p) {
+  if (!p || !p.skus || !p.skus.length) return 0;
+  return p.skus.reduce(function (a, s) { return a + (Number(s.stock) || 0); }, 0);
+}
+function normalizeProduct(p) {
+  if (!p) return;
+  if (p.onShelf === undefined) p.onShelf = true;
+  if (p.showOnHome === undefined) p.showOnHome = true;
+  if (!p.skus || !p.skus.length) {
+    p.skus = [{ id: (p.id || 'x') + '_def', label: '默认', price: 0, stock: 0, alert: 10 }];
+  }
+  p.skus.forEach(function (s) {
+    if (s.alert === undefined) s.alert = 10;
+    if (s.stock === undefined) s.stock = 0;
+    if (s.price === undefined) s.price = 0;
+  });
+  if (!((p.cover || p.image || '').trim()) && p.id) {
+    p.cover = PRODUCT_COVER_DEFAULTS[p.id] || PRODUCT_COVER_GENERIC;
+  }
+}
+function loadProductsFromStorage() {
+  var raw = storageGet('demo_products', null);
+  if (raw && Array.isArray(raw) && raw.length) {
+    PRODUCTS.length = 0;
+    raw.forEach(function (row) { PRODUCTS.push(row); });
+  }
+  PRODUCTS.forEach(normalizeProduct);
+  storageSet('demo_products', PRODUCTS);
+}
+loadProductsFromStorage();
+function persistProducts() {
+  PRODUCTS.forEach(normalizeProduct);
+  storageSet('demo_products', PRODUCTS);
+}
+
+var BANNERS_DEFAULT = {
+  EC: [
+    { id: 'ec_b1', kicker: '时令生鲜', title: '华东鲜果 · 冷链直达', subtitle: '草莓、苹果、蔬菜包一站购齐，爆款每日更新', promo: '满减券限时领', cta: '立即选购', image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#e4393c,#ff6b6b)', goto: { type: 'product', productId: 'p_strawberry' } },
+    { id: 'ec_b2', kicker: '粮油副食', title: '五常大米 · 产地直发', subtitle: '东北稻花香，家庭囤货更省心', promo: '限时直降 · 多规格可选', cta: '去逛逛', image: 'https://images.unsplash.com/photo-1586201375768-83862c0e59e4?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#2d5016,#5a9216)', goto: { type: 'product', productId: 'p_rice' } },
+    { id: 'ec_b3', kicker: '营养早餐', title: '土鸡蛋 · 当日鲜发', subtitle: '破损包赔，全家安心蛋白来源', promo: '', cta: '立即选购', image: 'https://images.unsplash.com/photo-1506976785307-b902aa843359?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#f2994a,#f2c94c)', goto: { type: 'product', productId: 'p_eggs' } }
+  ],
+  NC: [
+    { id: 'nc_b1', kicker: '华北精选', title: '滋补蜂蜜季', subtitle: '农家蜜源，冲饮烘焙皆宜', promo: '2件享组合价', cta: '立即选购', image: 'https://images.unsplash.com/photo-1471943311614-4662e056b425?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#d38312,#a83279)', goto: { type: 'product', productId: 'p_honey' } },
+    { id: 'nc_b2', kicker: '粮油副食', title: '米面粮油一站囤', subtitle: '华北仓极速发货', promo: '', cta: '查看分类', image: 'https://images.unsplash.com/photo-1586201375768-83862c0e59e4?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#667eea,#764ba2)', goto: { type: 'category', category: '粮油副食' } }
+  ],
+  SC: [
+    { id: 'sc_b1', kicker: '华南鲜果', title: '热带水果正当季', subtitle: '草莓、苹果鲜摘直达', promo: '限时折扣进行中', cta: '立即选购', image: 'https://images.unsplash.com/photo-1464965911861-aac31c23c1fe?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#fc5c7d,#6a82fb)', goto: { type: 'product', productId: 'p_strawberry' } },
+    { id: 'sc_b2', kicker: '轻食蔬菜', title: '有机蔬菜包', subtitle: '免洗搭配，快手一餐', promo: '', cta: '立即选购', image: 'https://images.unsplash.com/photo-1540420773420-3360872eeb67?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#11998e,#38ef7d)', goto: { type: 'product', productId: 'p_veg' } }
+  ],
+  NE: [
+    { id: 'ne_b1', kicker: '东北好米', title: '五常大米产地直发', subtitle: '寒地稻香，煮饭更香糯', promo: '多规格任选', cta: '立即选购', image: 'https://images.unsplash.com/photo-1586201375768-83862c0e59e4?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#1f4037,#99f2c8)', goto: { type: 'product', productId: 'p_rice' } },
+    { id: 'ne_b2', kicker: '滋补好物', title: '农家蜂蜜', subtitle: '早晚一杯温润滋养', promo: '', cta: '立即选购', image: 'https://images.unsplash.com/photo-1471943311614-4662e056b425?auto=format&w=1200&h=700&fit=crop&q=85', bg: 'linear-gradient(135deg,#d38312,#a83279)', goto: { type: 'product', productId: 'p_honey' } }
+  ]
+};
+var BANNERS = {};
+function rebuildBanners() {
+  var st = storageGet('demo_banners', null);
+  BANNERS = {};
+  REGIONS.forEach(function (r) {
+    var id = r.id;
+    if (st && st[id] && Array.isArray(st[id]) && st[id].length) {
+      try {
+        BANNERS[id] = JSON.parse(JSON.stringify(st[id]));
+      } catch (e) {
+        BANNERS[id] = JSON.parse(JSON.stringify(BANNERS_DEFAULT[id] || BANNERS_DEFAULT.EC));
+      }
+    } else {
+      BANNERS[id] = JSON.parse(JSON.stringify(BANNERS_DEFAULT[id] || BANNERSDefaultFallback()));
+    }
+  });
+}
+function BANNERSDefaultFallback() {
+  return BANNERS_DEFAULT.EC || [];
+}
+function persistBanners() {
+  storageSet('demo_banners', BANNERS);
+}
+rebuildBanners();
+
+/** 首页主推 + 列表上限：按区域存本地 demo_home_list（与「首页运营」表单联动） */
+function clampHomeGridMaxItems(n) {
+  var v = parseInt(n, 10);
+  if (isNaN(v) || v < 9) return 24;
+  if (v > 99) return 99;
+  return v;
+}
+function getHomeListConfig(regionId) {
+  var all = storageGet('demo_home_list', { byRegion: {} });
+  var row = (all.byRegion && all.byRegion[regionId]) || {};
+  return {
+    featuredMode: row.featuredMode === 'manual' ? 'manual' : 'sales',
+    featuredPid: String(row.featuredPid || '').trim(),
+    gridMaxItems: clampHomeGridMaxItems(row.gridMaxItems)
+  };
+}
+function saveHomeListConfig(regionId, mode, featuredPid, gridMaxItems) {
+  var all = storageGet('demo_home_list', { byRegion: {} });
+  if (!all.byRegion) all.byRegion = {};
+  var row = {
+    featuredMode: mode === 'manual' ? 'manual' : 'sales',
+    featuredPid: mode === 'manual' ? String(featuredPid || '').trim() : '',
+    gridMaxItems: clampHomeGridMaxItems(gridMaxItems != null ? gridMaxItems : (all.byRegion[regionId] || {}).gridMaxItems)
+  };
+  all.byRegion[regionId] = row;
+  storageSet('demo_home_list', all);
+}
+
+var app = {
+  region: storageGet('demo_region', REGIONS[0].id),
+  homePageSize: 9,
+  homePage: 1,
+  homeCategory: '全部',
+  category: CATEGORIES[0],
+  searchKeyword: '',
+  searchSort: 'default',
+  searchHistory: storageGet('demo_search_history', []),
+  cart: storageGet('demo_cart', {}), // { productId: { qty, checked, skuId } }
+  addresses: storageGet('demo_addresses', [
+    { id: 'a1', name: '张三', phone: '13800008888', province: '上海市', city: '上海市', district: '浦东新区', detail: '张江路123号', isDefault: true, updatedAt: Date.now() }
+  ]),
+  selectedAddressId: storageGet('demo_selected_address', 'a1'),
+  orders: storageGet('demo_orders', []),
+  orderFilter: 'ALL',
+  currentOrderId: null,
+  checkoutMode: 'cart', // cart | buynow
+  buyNow: null // { productId, skuId, qty }
+};
+function initAppRegionCategory() {
+  var ids = regionsActive().map(function (r) { return r.id; });
+  if (ids.length && ids.indexOf(app.region) === -1) {
+    app.region = ids[0];
+    storageSet('demo_region', app.region);
+  }
+  if (CATEGORIES.indexOf(app.category) === -1) app.category = CATEGORIES[0];
+}
+initAppRegionCategory();
+
+function nowStr() {
+  var d = new Date();
+  var pad = function(n){ return (n<10?'0':'')+n; };
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function saveAddresses(){ storageSet('demo_addresses', app.addresses); }
+function saveSelectedAddress(){ storageSet('demo_selected_address', app.selectedAddressId); }
+function saveOrders(){ storageSet('demo_orders', app.orders); }
+
+function escForHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escAttr(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function showToast(msg, kind) {
+  var el = document.getElementById('proto-toast');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.classList.remove('error', 'success', 'info');
+  if (kind === 'error') el.classList.add('error');
+  else if (kind === 'success') el.classList.add('success');
+  else if (kind === 'info') el.classList.add('info');
+  el.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(function () {
+    el.classList.remove('show', 'error', 'success', 'info');
+  }, 2800);
+}
+
+var _confirmOnOk = null;
+function showConfirm(opts) {
+  document.getElementById('proto-confirm-title').textContent = opts.title || '请确认';
+  document.getElementById('proto-confirm-body').textContent = opts.message || '';
+  var y = document.getElementById('proto-confirm-yes');
+  y.textContent = opts.okText || '确定';
+  y.className = 'btn' + (opts.danger ? ' btn-danger' : '');
+  document.getElementById('proto-confirm-no').textContent = opts.cancelText || '取消';
+  _confirmOnOk = opts.onConfirm;
+  document.getElementById('proto-confirm').classList.add('active');
+}
+function closeProtoConfirm() {
+  document.getElementById('proto-confirm').classList.remove('active');
+  _confirmOnOk = null;
+}
+
+function openProtoForm(opts) {
+  var overlay = document.getElementById('proto-form');
+  var title = document.getElementById('proto-form-title');
+  var fieldsEl = document.getElementById('proto-form-fields');
+  var form = document.getElementById('proto-form-inner');
+  title.textContent = opts.title || '';
+  fieldsEl.innerHTML = (opts.fields || []).map(function (f) {
+    var t = f.inputType || 'text';
+    var extra = '';
+    if (f.step) extra += ' step="' + escAttr(String(f.step)) + '"';
+    if (f.min != null) extra += ' min="' + escAttr(String(f.min)) + '"';
+    return (
+      '<div class="form-group"><label>' +
+      escForHtml(f.label) +
+      '</label><input class="form-control" name="' +
+      escAttr(f.name) +
+      '" type="' +
+      escAttr(t) +
+      '" value="' +
+      escAttr(f.value || '') +
+      '" placeholder="' +
+      escAttr(f.placeholder || '') +
+      '"' +
+      (f.required ? ' required' : '') +
+      extra +
+      ' /></div>'
+    );
+  }).join('');
+  form._protoSubmit = opts.onSubmit;
+  overlay.classList.add('active');
+  var first = fieldsEl.querySelector('input');
+  if (first) setTimeout(function () { first.focus(); }, 60);
+}
+function closeProtoForm() {
+  document.getElementById('proto-form').classList.remove('active');
+  var form = document.getElementById('proto-form-inner');
+  if (form) form._protoSubmit = null;
+}
+
+function bindProtoUiOnce() {
+  if (bindProtoUiOnce.done) return;
+  bindProtoUiOnce.done = true;
+  document.getElementById('proto-confirm-yes').addEventListener('click', function () {
+    var fn = _confirmOnOk;
+    closeProtoConfirm();
+    if (fn) fn();
+  });
+  document.getElementById('proto-confirm-no').addEventListener('click', closeProtoConfirm);
+  document.getElementById('proto-form-cancel').addEventListener('click', closeProtoForm);
+  document.getElementById('proto-form-inner').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var form = ev.target;
+    if (!form._protoSubmit) return;
+    var vals = {};
+    form.querySelectorAll('[name]').forEach(function (i) {
+      vals[i.name] = i.value;
+    });
+    if (form._protoSubmit(vals) !== false) closeProtoForm();
+  });
+}
+
+function showLogisticsDemo() {
+  showToast('物流：已揽收 → 运输中 → 派送中（演示）', 'info');
+}
+
+function adminFmtTime(ts) {
+  var d = new Date(ts);
+  return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+}
+function startOfTodayMs() {
+  var d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+var adminUsers = storageGet('demo_admin_users', [
+  { id: 'u1', nick: '微信用户', phone: '13812348888', orders: 5, spend: 1234, reg: '2026-01-01', disabled: false },
+  { id: 'u2', nick: '用户002', phone: '13999990000', orders: 3, spend: 567, reg: '2026-02-15', disabled: false }
+]);
+function saveAdminUsers() { storageSet('demo_admin_users', adminUsers); }
+
+var adminAccounts = storageGet('demo_admin_accounts', [
+  { id: '1', name: 'admin', role: '超级管理员', disabled: false, lastLogin: '2026-04-13 10:00' },
+  { id: '2', name: 'manager01', role: '运营', disabled: false, lastLogin: '2026-04-12 15:30' }
+]);
+function saveAdminAccounts() { storageSet('demo_admin_accounts', adminAccounts); }
+
+var adminPay = storageGet('demo_admin_pay', { mchid: '', secret: '' });
+function saveAdminPayStore() { storageSet('demo_admin_pay', adminPay); }
+
+var adminEditingRegionCode = null;
+
+function maskPhone(p){
+  var s = String(p||'');
+  if (s.length === 11) return s.slice(0,3)+'****'+s.slice(7);
+  return s;
+}
+
+function getDefaultAddress(){ return app.addresses.find(function(a){return a.isDefault;}) || app.addresses[0] || null; }
+function getSelectedAddress(){ return app.addresses.find(function(a){return a.id===app.selectedAddressId;}) || getDefaultAddress(); }
+function setDefaultAddress(id){
+  app.addresses.forEach(function(a){ a.isDefault = (a.id===id); });
+  app.selectedAddressId = id;
+  saveAddresses(); saveSelectedAddress();
+  renderAddressList();
+  renderConfirm();
+}
+
+function getRegionName(id) {
+  var r = REGIONS.find(function (x) { return x.id === id; });
+  return r ? r.name : (regionsActive()[0] && regionsActive()[0].name) || '华东';
+}
+
+function listProductsByRegion(regionId) {
+  return PRODUCTS.filter(function (p) {
+    if (p.onShelf === false) return false;
+    return p.regions && p.regions.indexOf(regionId) !== -1;
+  });
+}
+
+function formatPrice(n) { return '¥' + Number(n || 0).toFixed(0); }
+
+// ====== 区域选择 ======
+var regionOverlay = document.getElementById('region-overlay');
+var regionTagsEl = document.getElementById('region-tags');
+var regionBarEl = document.getElementById('region-bar');
+var regionNameEl = document.getElementById('region-name');
+var pendingRegion = app.region;
+
+function openRegionPicker() {
+  pendingRegion = app.region;
+  renderRegionTags();
+  regionOverlay.classList.add('active');
+}
+function closeRegionPicker() { regionOverlay.classList.remove('active'); }
+function renderRegionTags() {
+  regionTagsEl.innerHTML = regionsActive().map(function (r) {
+    var cls = (r.id === pendingRegion) ? 'overlay-tag active' : 'overlay-tag';
+    return '<span class="' + cls + '" data-region="' + r.id + '">' + r.name + '</span>';
+  }).join('');
+}
+regionBarEl && regionBarEl.addEventListener('click', openRegionPicker);
+regionTagsEl && regionTagsEl.addEventListener('click', function(e){
+  var t = e.target;
+  if (t && t.dataset && t.dataset.region) {
+    pendingRegion = t.dataset.region;
+    renderRegionTags();
+  }
+});
+document.getElementById('region-cancel') && document.getElementById('region-cancel').addEventListener('click', closeRegionPicker);
+document.getElementById('region-ok') && document.getElementById('region-ok').addEventListener('click', function(){
+  app.region = pendingRegion;
+  storageSet('demo_region', app.region);
+  closeRegionPicker();
+  app.homePage = 1;
+  carouselIndex = 0;
+  syncRegionUI();
+  renderHome();
+  renderCategory();
+});
+
+function syncRegionUI() {
+  if (regionNameEl) regionNameEl.textContent = getRegionName(app.region);
+}
+
+// ====== Banner 轮播 ======
+var carouselEl = document.getElementById('carousel');
+var carouselIndex = 0;
+var carouselTimer = null;
+
+function stopCarousel() {
+  if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
+}
+function startCarousel() {
+  stopCarousel();
+  carouselTimer = setInterval(function(){
+    var banners = BANNERS[app.region] || [];
+    if (banners.length <= 1) return;
+    carouselIndex = (carouselIndex + 1) % banners.length;
+    renderCarousel();
+  }, 3000);
+}
+
+function gotoBanner(b) {
+  if (!b || !b.goto) return;
+  var g = b.goto;
+  if (g.type === 'product' && g.productId) openProductDetail(g.productId);
+  else if (g.type === 'search' && g.keyword) openSearchResult(g.keyword);
+  else if (g.type === 'category' && g.category) {
+    app.category = g.category;
+    show('category');
+    renderCategory();
+  }
+}
+
+function renderCarousel() {
+  var banners = BANNERS[app.region] || [];
+  if (!carouselEl) return;
+  if (!banners.length) {
+    carouselEl.innerHTML = '<div class="empty" style="position:relative;z-index:1">暂无 Banner</div>';
+    return;
+  }
+  carouselIndex = Math.min(carouselIndex, banners.length - 1);
+  var slides = banners.map(function (b, idx) {
+    var cls = idx === carouselIndex ? 'carousel-slide active' : 'carousel-slide';
+    var img = (b.image || '').trim();
+    var bgLayer = '';
+    if (img) {
+      var u = img.replace(/'/g, '%27');
+      bgLayer =
+        '<div class="carousel-slide-bg" style="background-image:linear-gradient(105deg,rgba(0,0,0,.42),rgba(0,0,0,.18)),url(\'' +
+        u +
+        '\')"></div>';
+    } else {
+      bgLayer = '<div class="carousel-slide-bg" style="background:' + (b.bg || '#e4393c') + '"></div>';
+    }
+    var title = escForHtml(b.title || b.text || '活动');
+    var sub = escForHtml(b.subtitle || '');
+    var promo = escForHtml(b.promo || '');
+    var cta = escForHtml(b.cta || '立即选购');
+    var kicker = escForHtml(b.kicker || '');
+    return (
+      '<div class="' +
+      cls +
+      '" data-banner="' +
+      escAttr(b.id) +
+      '">' +
+      bgLayer +
+      '<div class="carousel-slide-grad"></div>' +
+      '<div class="carousel-slide-copy">' +
+      (kicker ? '<div class="carousel-kicker">' + kicker + '</div>' : '') +
+      '<div class="carousel-title">' +
+      title +
+      '</div>' +
+      (sub ? '<div class="carousel-sub">' + sub + '</div>' : '') +
+      (promo ? '<div class="carousel-promo">' + promo + '</div>' : '') +
+      '<span class="carousel-cta">' +
+      cta +
+      ' ›</span>' +
+      '</div></div>'
+    );
+  }).join('');
+  var dots =
+    '<div class="carousel-dots">' +
+    banners
+      .map(function (_, idx) {
+        return '<span class="' + (idx === carouselIndex ? 'carousel-dot active' : 'carousel-dot') + '"></span>';
+      })
+      .join('') +
+    '</div>';
+  carouselEl.innerHTML = slides + dots;
+}
+
+carouselEl &&
+  carouselEl.addEventListener('click', function () {
+    var banners = BANNERS[app.region] || [];
+    var b = banners[carouselIndex];
+    if (!b) return;
+    gotoBanner(b);
+  });
+
+// ====== 首页：轮播 + 分类横滑 + 主推卡片 + 三列瀑布营销卡 ======
+var homeGoodsEl = document.getElementById('home-goods');
+var homeLoadmoreBtn = document.getElementById('home-loadmore');
+
+function homeSortedProducts() {
+  var list = listProductsByRegion(app.region);
+  var c = app.homeCategory || '全部';
+  if (c !== '全部') list = list.filter(function (p) { return p.category === c; });
+  list = list.filter(function (p) {
+    return p.showOnHome !== false;
+  });
+  return list.slice().sort(function (a, b) { return (b.sales || 0) - (a.sales || 0); });
+}
+
+function homeFeaturedAndGrid() {
+  var sorted = homeSortedProducts();
+  var cfg = getHomeListConfig(app.region);
+  var cap = cfg.gridMaxItems;
+  var featured = null;
+  var gridFull = [];
+  if (cfg.featuredMode === 'manual' && cfg.featuredPid) {
+    var ix = -1;
+    for (var i = 0; i < sorted.length; i++) {
+      if (sorted[i].id === cfg.featuredPid) {
+        ix = i;
+        break;
+      }
+    }
+    if (ix >= 0) {
+      featured = sorted[ix];
+      gridFull = sorted.filter(function (_p, j) {
+        return j !== ix;
+      });
+    } else {
+      featured = sorted[0] || null;
+      gridFull = sorted.length > 1 ? sorted.slice(1) : [];
+    }
+  } else {
+    featured = sorted[0] || null;
+    gridFull = sorted.length > 1 ? sorted.slice(1) : [];
+  }
+  var gridSource = gridFull.slice(0, cap);
+  return {
+    featured: featured,
+    gridSource: gridSource,
+    gridMaxItems: cap,
+    gridOmitted: Math.max(0, gridFull.length - gridSource.length),
+    gridFullLen: gridFull.length
+  };
+}
+
+function renderHomeCatScroll() {
+  var el = document.getElementById('home-cat-scroll');
+  if (!el) return;
+  var cats = ['全部'].concat(CATEGORIES);
+  el.innerHTML = cats
+    .map(function (c) {
+      var ac = c === (app.homeCategory || '全部') ? 'home-cat-pill active' : 'home-cat-pill';
+      return '<span class="' + ac + '" data-home-cat="' + escAttr(c) + '">' + escForHtml(c) + '</span>';
+    })
+    .join('');
+}
+
+function renderHomeProductCard(p) {
+  var minP = productMinPrice(p);
+  var lineRaw = p.linePrice != null ? Number(p.linePrice) : NaN;
+  var lineP = !isNaN(lineRaw) && lineRaw > minP ? lineRaw : null;
+  var tag = (p.tag || '').trim();
+  var promo = (p.promoLine || '').trim();
+  return (
+    '<div class="home-card" data-pid="' +
+    escAttr(p.id) +
+    '">' +
+    '<div class="hc-img" style="' +
+    productImgStyle(p) +
+    '"></div>' +
+    '<div class="hc-body">' +
+    (tag ? '<span class="hc-tag">' + escForHtml(tag) + '</span>' : '') +
+    '<div class="hc-name">' +
+    escForHtml(p.name) +
+    '</div>' +
+    '<div class="hc-promo">' +
+    (promo ? escForHtml(promo) : '&nbsp;') +
+    '</div>' +
+    '<div class="hc-price-row">' +
+    '<div><span class="hc-price">' +
+    formatPrice(minP) +
+    '</span>' +
+    (lineP != null ? ' <span class="hc-line">' + formatPrice(lineP) + '</span>' : '') +
+    '</div>' +
+    '<button type="button" class="hc-cart" data-home-cart="' +
+    escAttr(p.id) +
+    '" aria-label="加购">🛒</button>' +
+    '</div></div></div>'
+  );
+}
+
+function renderHomeFeaturedBlock(p) {
+  var el = document.getElementById('home-featured');
+  if (!el) return;
+  if (!p) {
+    el.innerHTML = '';
+    return;
+  }
+  var minP = productMinPrice(p);
+  var lineRaw = p.linePrice != null ? Number(p.linePrice) : NaN;
+  var lineP = !isNaN(lineRaw) && lineRaw > minP ? lineRaw : null;
+  var tag = (p.tag || '').trim();
+  var desc = ((p.desc || '') + '').trim();
+  var sub = desc.length > 40 ? desc.slice(0, 40) + '…' : desc;
+  el.innerHTML =
+    '<div class="home-featured" data-pid="' +
+    escAttr(p.id) +
+    '">' +
+    '<div class="home-featured-img" style="' +
+    productImgStyle(p) +
+    '"></div>' +
+    '<div class="home-featured-body">' +
+    (tag ? '<span class="hf-tag">' + escForHtml(tag) + '</span>' : '') +
+    '<div class="hf-name">' +
+    escForHtml(p.name) +
+    '</div>' +
+    (sub ? '<div class="hf-sub">' + escForHtml(sub) + '</div>' : '') +
+    '<div class="hf-row">' +
+    '<span class="hf-price">' +
+    formatPrice(minP) +
+    '</span>' +
+    (lineP != null ? '<span class="hf-line">' + formatPrice(lineP) + '</span>' : '') +
+    '</div>' +
+    '<button type="button" class="hf-buy">立即购买 ›</button>' +
+    '</div></div>';
+}
+
+function renderHome() {
+  if (app.homeCategory && app.homeCategory !== '全部' && CATEGORIES.indexOf(app.homeCategory) === -1) {
+    app.homeCategory = '全部';
+  }
+  syncRegionUI();
+  renderCarousel();
+  startCarousel();
+  renderHomeCatScroll();
+
+  var fg = homeFeaturedAndGrid();
+  var featured = fg.featured;
+  var gridSource = fg.gridSource;
+  renderHomeFeaturedBlock(featured);
+
+  if (!homeGoodsEl) return;
+
+  var hintEl = document.getElementById('home-grid-hint');
+  if (hintEl) {
+    hintEl.style.display = 'none';
+    hintEl.textContent = '';
+  }
+
+  if (!featured && !gridSource.length) {
+    homeGoodsEl.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:24px 12px">暂无商品，可切换区域或分类看看</div>';
+    if (homeLoadmoreBtn) {
+      homeLoadmoreBtn.style.display = 'none';
+      homeLoadmoreBtn.disabled = true;
+    }
+    return;
+  }
+
+  if (!gridSource.length) {
+    homeGoodsEl.innerHTML =
+      '<div class="empty" style="grid-column:1/-1;padding:16px 12px;font-size:12px;color:#888">当前筛选下仅一款主推，已展示在上方卡片</div>';
+    if (homeLoadmoreBtn) {
+      homeLoadmoreBtn.style.display = 'none';
+      homeLoadmoreBtn.disabled = true;
+    }
+    return;
+  }
+
+  var maxPage = Math.max(1, Math.ceil(gridSource.length / app.homePageSize));
+  if (app.homePage > maxPage) app.homePage = maxPage;
+
+  var visible = gridSource.slice(0, app.homePage * app.homePageSize);
+  homeGoodsEl.innerHTML = visible.map(renderHomeProductCard).join('');
+
+  if (hintEl && fg.gridOmitted > 0) {
+    hintEl.style.display = '';
+    hintEl.textContent =
+      '列表按销量仅展示前 ' +
+      fg.gridMaxItems +
+      ' 个（不含主推），另有 ' +
+      fg.gridOmitted +
+      ' 个本筛选下可售商品未在首页列出，请用「进分类」或「搜索」浏览全部。';
+  }
+
+  if (homeLoadmoreBtn) {
+    var hasMore = visible.length < gridSource.length;
+    homeLoadmoreBtn.style.display = '';
+    homeLoadmoreBtn.textContent = hasMore ? '加载更多' : '没有更多了';
+    homeLoadmoreBtn.disabled = !hasMore;
+  }
+}
+
+homeLoadmoreBtn &&
+  homeLoadmoreBtn.addEventListener('click', function () {
+    var gridSource = homeFeaturedAndGrid().gridSource;
+    var maxPage = Math.max(1, Math.ceil(gridSource.length / app.homePageSize));
+    app.homePage = Math.min(app.homePage + 1, maxPage);
+    renderHome();
+  });
+
+document.getElementById('home-cat-scroll') &&
+  document.getElementById('home-cat-scroll').addEventListener('click', function (e) {
+    var pill = e.target && e.target.closest ? e.target.closest('[data-home-cat]') : null;
+    if (!pill) return;
+    app.homeCategory = pill.dataset.homeCat || '全部';
+    app.homePage = 1;
+    carouselIndex = 0;
+    renderHome();
+  });
+
+document.getElementById('home-search-wrap-click') &&
+  document.getElementById('home-search-wrap-click').addEventListener('click', function () {
+    show('search');
+  });
+
+document.getElementById('home-featured') &&
+  document.getElementById('home-featured').addEventListener('click', function () {
+    var row = this.querySelector('.home-featured[data-pid]');
+    if (row) openProductDetail(row.dataset.pid);
+  });
+
+homeGoodsEl &&
+  homeGoodsEl.addEventListener('click', function (e) {
+    var cart = e.target && e.target.closest ? e.target.closest('[data-home-cart]') : null;
+    if (cart && cart.dataset.homeCart) {
+      e.preventDefault();
+      e.stopPropagation();
+      addToCart(cart.dataset.homeCart, 1);
+      showToast('已加入购物车', 'success');
+      return;
+    }
+    var card = e.target && e.target.closest ? e.target.closest('.home-card') : null;
+    if (card && card.dataset.pid) openProductDetail(card.dataset.pid);
+  });
+
+// ====== 分类：左侧切换右侧商品列表 ======
+var categoryGoodsEl = document.getElementById('category-goods');
+var categoryLeft = document.getElementById('category-left');
+function renderCategoryTabs() {
+  if (!categoryLeft) return;
+  categoryLeft.innerHTML = CATEGORIES.map(function (cat) {
+    var ac = cat === app.category ? 'category-item active' : 'category-item';
+    return '<div class="' + ac + '" data-cat="' + cat + '">' + cat + '</div>';
+  }).join('');
+}
+function renderCategory() {
+  renderCategoryTabs();
+  var list = listProductsByRegion(app.region).filter(function(p){ return p.category === app.category; });
+  if (!categoryGoodsEl) return;
+  if (!list.length) {
+    categoryGoodsEl.innerHTML = '<div class="empty">该分类暂无商品</div>';
+    return;
+  }
+  categoryGoodsEl.innerHTML = list.map(function(p){
+    return (
+      '<div class="goods-item" data-pid="'+p.id+'">' +
+        '<div class="goods-img" style="' + productImgStyle(p) + '"></div>' +
+        '<div class="goods-info">' +
+          '<div class="goods-name">'+p.name+'</div>' +
+          '<div class="goods-price">'+formatPrice(productMinPrice(p))+'</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+categoryLeft && categoryLeft.addEventListener('click', function(e){
+  var item = e.target && e.target.closest ? e.target.closest('.category-item') : null;
+  if (!item) return;
+  var cat = item.dataset.cat || item.textContent.trim();
+  app.category = cat;
+  categoryLeft.querySelectorAll('.category-item').forEach(function(x){ x.classList.remove('active'); });
+  item.classList.add('active');
+  renderCategory();
+});
+categoryGoodsEl && categoryGoodsEl.addEventListener('click', function(e){
+  var node = e.target && e.target.closest ? e.target.closest('.goods-item') : null;
+  if (node && node.dataset && node.dataset.pid) openProductDetail(node.dataset.pid);
+});
+
+// ====== 搜索：建议/历史缓存/结果页+排序/空态 ======
+var hotTags = ['大米','苹果','草莓','鸡蛋','蜂蜜','蔬菜'];
+var hotTagsEl = document.getElementById('hot-tags');
+var historyEl = document.getElementById('history-tags');
+var clearHistoryBtn = document.getElementById('clear-history');
+var searchInput = document.getElementById('search-input');
+var suggestBox = document.getElementById('search-suggest');
+
+function renderHotAndHistory() {
+  if (hotTagsEl) {
+    hotTagsEl.innerHTML = hotTags.map(function(t){ return '<span class="tag" data-hot="'+t+'">'+t+'</span>'; }).join('');
+  }
+  if (historyEl) {
+    if (!app.searchHistory.length) historyEl.innerHTML = '<span class="muted">暂无历史</span>';
+    else historyEl.innerHTML = app.searchHistory.map(function(t){ return '<span class="tag" data-his="'+t+'">'+t+'</span>'; }).join('');
+  }
+}
+
+function pushHistory(keyword) {
+  var k = (keyword || '').trim();
+  if (!k) return;
+  app.searchHistory = app.searchHistory.filter(function(x){ return x !== k; });
+  app.searchHistory.unshift(k);
+  app.searchHistory = app.searchHistory.slice(0, 10);
+  storageSet('demo_search_history', app.searchHistory);
+  renderHotAndHistory();
+}
+
+function getSuggestions(keyword) {
+  var k = (keyword || '').trim();
+  if (!k) return [];
+  var pool = listProductsByRegion(app.region).map(function(p){return p.name;}).concat(hotTags);
+  var seen = {};
+  return pool.filter(function(x){
+    if (seen[x]) return false;
+    seen[x] = true;
+    return x.indexOf(k) !== -1;
+  }).slice(0, 6);
+}
+
+function showSuggest(list) {
+  if (!suggestBox) return;
+  if (!list.length) { suggestBox.style.display = 'none'; suggestBox.innerHTML = ''; return; }
+  suggestBox.style.display = '';
+  suggestBox.innerHTML = '<div class="section-title" style="margin-bottom:6px">搜索建议</div>' +
+    list.map(function(x){ return '<div class="suggest-item" data-sug="'+x+'" style="padding:10px;border-bottom:1px solid #f5f5f5;cursor:pointer">'+x+'</div>'; }).join('');
+}
+
+var suggestTimer = null;
+function onSearchTyping(value) {
+  if (suggestTimer) clearTimeout(suggestTimer);
+  suggestTimer = setTimeout(function(){
+    showSuggest(getSuggestions(value));
+  }, 180);
+}
+
+function openSearchResult(keyword) {
+  app.searchKeyword = (keyword || '').trim();
+  app.searchSort = 'default';
+  pushHistory(app.searchKeyword);
+  // 同步输入框
+  var in2 = document.getElementById('search-result-input');
+  if (in2) in2.value = app.searchKeyword;
+  show('search-result');
+  renderSearchResult();
+}
+
+function sortProducts(list) {
+  var arr = list.slice();
+  if (app.searchSort === 'price_asc') arr.sort(function (a, b) { return productMinPrice(a) - productMinPrice(b); });
+  else if (app.searchSort === 'price_desc') arr.sort(function (a, b) { return productMinPrice(b) - productMinPrice(a); });
+  else if (app.searchSort === 'sales_desc') arr.sort(function(a,b){return b.sales-a.sales;});
+  return arr;
+}
+
+function renderSearchResult() {
+  var root = document.getElementById('search-result-list');
+  if (!root) return;
+  var k = (app.searchKeyword || '').trim();
+  var list = listProductsByRegion(app.region).filter(function(p){ return !k || p.name.indexOf(k) !== -1; });
+  list = sortProducts(list);
+  if (!list.length) {
+    root.innerHTML = '<div class="empty">未找到相关商品</div>';
+    return;
+  }
+  root.innerHTML = list.map(function(p){
+    return (
+      '<div class="cart-item" style="margin:10px" data-pid="'+p.id+'">' +
+        '<div class="cart-img" style="' + productImgStyle(p) + '"></div>' +
+        '<div class="cart-info" style="margin-left:0">' +
+          '<div class="cart-name">'+p.name+'</div>' +
+          '<div class="cart-sub">销量 '+p.sales+' · 库存 '+productTotalStock(p)+'</div>' +
+          '<div class="cart-ops" style="display:flex;justify-content:space-between;align-items:center">' +
+            '<div class="cart-price">'+formatPrice(productMinPrice(p))+'</div>' +
+            '<div style="display:flex;gap:8px">' +
+              '<button class="btn btn-outline" data-addcart="'+p.id+'" style="padding:6px 10px;border-radius:8px">加入购物车</button>' +
+              '<button class="btn" data-buy="'+p.id+'" style="padding:6px 10px;border-radius:8px">购买</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+// 搜索页事件
+hotTagsEl && hotTagsEl.addEventListener('click', function(e){
+  var t = e.target;
+  if (t && t.dataset && t.dataset.hot) openSearchResult(t.dataset.hot);
+});
+historyEl && historyEl.addEventListener('click', function(e){
+  var t = e.target;
+  if (t && t.dataset && t.dataset.his) openSearchResult(t.dataset.his);
+});
+clearHistoryBtn && clearHistoryBtn.addEventListener('click', function(){
+  app.searchHistory = [];
+  storageSet('demo_search_history', app.searchHistory);
+  renderHotAndHistory();
+});
+searchInput && searchInput.addEventListener('input', function(){ onSearchTyping(searchInput.value); });
+searchInput && searchInput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter') openSearchResult(searchInput.value);
+});
+suggestBox && suggestBox.addEventListener('click', function(e){
+  var t = e.target;
+  if (t && t.dataset && t.dataset.sug) openSearchResult(t.dataset.sug);
+});
+
+// 结果页事件
+var searchResultInput = document.getElementById('search-result-input');
+searchResultInput && searchResultInput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter') openSearchResult(searchResultInput.value);
+});
+var chips = document.querySelectorAll('#page-search-result .chip');
+chips && chips.forEach(function(c){
+  c.addEventListener('click', function(){
+    chips.forEach(function(x){ x.classList.remove('active'); });
+    c.classList.add('active');
+    app.searchSort = c.dataset.sort;
+    renderSearchResult();
+  });
+});
+document.getElementById('search-result-list') && document.getElementById('search-result-list').addEventListener('click', function(e){
+  var t = e.target;
+  if (!t) return;
+  var pid = t.dataset && (t.dataset.addcart || t.dataset.buy);
+  if (t.dataset.addcart) { addToCart(pid, 1); showToast('已加入购物车', 'success'); return; }
+  if (t.dataset.buy) { openProductDetail(pid); return; }
+  var card = t.closest && t.closest('[data-pid]');
+  if (card && card.dataset && card.dataset.pid) openProductDetail(card.dataset.pid);
+});
+
+// ====== 商品详情（用于 Banner/列表点击跳转） ======
+var currentProductId = 'p_rice';
+function getProduct(pid) {
+  return PRODUCTS.find(function(p){ return p.id === pid; }) || PRODUCTS[0];
+}
+function openProductDetail(pid) {
+  currentProductId = pid;
+  var p = getProduct(pid);
+  var detailPage = document.getElementById('page-detail');
+  if (detailPage) {
+    var priceNode = detailPage.querySelector('.goods-price');
+    if (priceNode) priceNode.textContent = formatPrice(productMinPrice(p));
+    var titleNode = document.getElementById('detail-title');
+    if (titleNode) titleNode.textContent = p.name;
+    var descEl = document.getElementById('detail-desc');
+    if (descEl) descEl.textContent = (p.desc && String(p.desc).trim()) ? p.desc : '暂无详情介绍';
+    var cov = document.getElementById('detail-cover');
+    if (cov) cov.setAttribute('style', 'height:260px;margin:10px;border-radius:8px;' + productImgStyle(p));
+  }
+  show('detail');
+}
+
+// ====== 购物车：勾选/全选/数量/删除/合计/空态 ======
+function saveCart() { storageSet('demo_cart', app.cart); }
+function addToCart(pid, qty) {
+  var p = getProduct(pid);
+  var def = getDefaultSku(p);
+  var item = app.cart[pid] || { qty: 0, checked: true, skuId: def ? def.id : undefined };
+  if (!item.skuId && def) item.skuId = def.id;
+  item.qty = Math.max(1, item.qty + (qty || 1));
+  item.checked = true;
+  app.cart[pid] = item;
+  saveCart();
+  renderCart();
+}
+function removeFromCart(pid) {
+  delete app.cart[pid];
+  saveCart();
+  renderCart();
+}
+function setCartChecked(pid, checked) {
+  if (!app.cart[pid]) return;
+  app.cart[pid].checked = !!checked;
+  saveCart();
+  renderCartFooter();
+}
+function setCartQty(pid, qty) {
+  if (!app.cart[pid]) return;
+  var p = getProduct(pid);
+  var sku = getSkuById(p, app.cart[pid].skuId);
+  var max = Math.max(0, sku ? sku.stock : 0);
+  var v = Math.max(1, Number(qty || 1));
+  if (max && v > max) {
+    v = max;
+    showToast('库存不足，最多只能买 ' + max + ' 件', 'error');
+  }
+  if (max === 0) {
+    showToast('该商品已售罄', 'error');
+    v = 1;
+  }
+  app.cart[pid].qty = v;
+  saveCart();
+  renderCart();
+}
+function cartList() {
+  return Object.keys(app.cart).map(function (pid) {
+    var p = getProduct(pid);
+    var it = app.cart[pid];
+    var sku = getSkuById(p, it.skuId);
+    var unitPrice = sku ? Number(sku.price) || 0 : 0;
+    var unitStock = sku ? Number(sku.stock) || 0 : 0;
+    var sub = sku && p.skus.length > 1 ? sku.label : '';
+    return { pid: pid, product: p, qty: it.qty, checked: !!it.checked, skuId: it.skuId, sku: sku, unitPrice: unitPrice, unitStock: unitStock, subLabel: sub };
+  });
+}
+function calcCartTotal() {
+  return cartList().filter(function (x) { return x.checked; }).reduce(function (sum, x) { return sum + x.unitPrice * x.qty; }, 0);
+}
+function renderCartFooter() {
+  var totalEl = document.getElementById('cart-total');
+  if (totalEl) totalEl.textContent = formatPrice(calcCartTotal());
+  var allEl = document.getElementById('cart-checkall');
+  if (allEl) {
+    var list = cartList();
+    allEl.checked = list.length > 0 && list.every(function(x){return x.checked;});
+  }
+}
+function renderCart() {
+  var root = document.getElementById('cart-body');
+  if (!root) return;
+  var list = cartList();
+  if (!list.length) {
+    root.innerHTML = '<div class="empty">购物车为空</div>';
+    renderCartFooter();
+    return;
+  }
+  root.innerHTML = list.map(function(x){
+    var p = x.product;
+    var disabled = x.unitStock === 0 ? 'style="opacity:.6"' : '';
+    var nameLine = p.name + (x.subLabel ? ' · ' + x.subLabel : '');
+    return (
+      '<div class="cart-item" data-pid="'+x.pid+'" '+disabled+'>' +
+        '<input class="checkbox" type="checkbox" '+(x.checked?'checked':'')+' data-check="'+x.pid+'"/>' +
+        '<div class="cart-img" style="' + productImgStyle(p) + '"></div>' +
+        '<div class="cart-info">' +
+          '<div class="cart-name">'+nameLine+'</div>' +
+          '<div class="cart-sub">库存 '+x.unitStock+'</div>' +
+          '<div class="cart-ops">' +
+            '<div class="cart-price">'+formatPrice(x.unitPrice)+'</div>' +
+            '<div style="display:flex;gap:8px;align-items:center">' +
+              '<button class="btn btn-outline" data-del="'+x.pid+'" style="padding:6px 10px;border-radius:8px">删除</button>' +
+              '<div class="qty">' +
+                '<button data-minus="'+x.pid+'">-</button>' +
+                '<span>'+x.qty+'</span>' +
+                '<button data-plus="'+x.pid+'">+</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+  renderCartFooter();
+}
+
+document.getElementById('cart-body') && document.getElementById('cart-body').addEventListener('click', function(e){
+  var t = e.target;
+  if (!t || !t.dataset) return;
+  if (t.dataset.del) return removeFromCart(t.dataset.del);
+  if (t.dataset.minus) return setCartQty(t.dataset.minus, (app.cart[t.dataset.minus]||{qty:1}).qty - 1);
+  if (t.dataset.plus) return setCartQty(t.dataset.plus, (app.cart[t.dataset.plus]||{qty:1}).qty + 1);
+});
+document.getElementById('cart-body') && document.getElementById('cart-body').addEventListener('change', function(e){
+  var t = e.target;
+  if (t && t.dataset && t.dataset.check) setCartChecked(t.dataset.check, t.checked);
+});
+document.getElementById('cart-checkall') && document.getElementById('cart-checkall').addEventListener('change', function(e){
+  var checked = e.target.checked;
+  Object.keys(app.cart).forEach(function(pid){ app.cart[pid].checked = checked; });
+  saveCart();
+  renderCart();
+});
+document.getElementById('cart-checkout') && document.getElementById('cart-checkout').addEventListener('click', function(){
+  var total = calcCartTotal();
+  if (total <= 0) return showToast('请先勾选要结算的商品', 'error');
+  show('confirm');
+});
+
+// ====== 页面渲染联动 ======
+var oldRender = render;
+render = function(page) {
+  oldRender(page);
+  // 进入页面时做一次对应渲染（保证切换区域后能刷新）
+  if (page === 'home') renderHome();
+  if (page === 'category') renderCategory();
+  if (page === 'cart') renderCart();
+  if (page === 'search') { renderHotAndHistory(); showSuggest([]); }
+  if (page === 'search-result') renderSearchResult();
+  if (page === 'confirm') renderConfirm();
+  if (page === 'orders') renderOrderList();
+  if (page === 'address') renderAddressList();
+};
 
 function render(page) {
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
@@ -692,13 +2160,21 @@ function showAdmin() {
   isAdminMode = true;
   document.getElementById('admin').classList.add('active');
   document.querySelector('.container').style.display = 'none';
+  adminRefresh('dashboard');
 }
 
 function showMiniProgram() {
   isAdminMode = false;
   closeProductModal();
+  closeAdminOrderModal();
+  closeAdminRegionModal();
   document.getElementById('admin').classList.remove('active');
   document.querySelector('.container').style.display = '';
+  rebuildBanners();
+  renderHome();
+  renderCategory();
+  renderCart();
+  renderOrderList();
 }
 
 function switchAdminMenu(el, page) {
@@ -707,49 +2183,1451 @@ function switchAdminMenu(el, page) {
   document.querySelectorAll('.admin-page').forEach(function(p){ p.classList.remove('active'); });
   var target = document.getElementById('admin-' + page);
   if (target) target.classList.add('active');
+  adminRefresh(page);
+}
+
+function adminRefresh(page) {
+  if (page === 'dashboard') renderAdminDashboard();
+  if (page === 'homeops') renderAdminHomeBanners();
+  if (page === 'products') renderAdminProducts();
+  if (page === 'orders') renderAdminOrders();
+  if (page === 'users') renderAdminUsers();
+  if (page === 'categories') renderAdminCategories();
+  if (page === 'regions') renderAdminRegions();
+  if (page === 'inventory') renderAdminInventory();
+  if (page === 'settings') renderAdminSettingsForm();
+}
+
+function adminBuildBannerFromVals(vals, keepId) {
+  var jt = String(vals.jumpType || 'product')
+    .trim()
+    .toLowerCase();
+  var jv = String(vals.jumpTarget || '').trim();
+  var goto;
+  if (jt === 'search') goto = { type: 'search', keyword: jv || '水果' };
+  else if (jt === 'category') goto = { type: 'category', category: jv || CATEGORIES[0] || '粮油副食' };
+  else goto = { type: 'product', productId: jv || 'p_rice' };
+  return {
+    id: keepId || 'bn_' + Date.now(),
+    kicker: String(vals.kicker || '').trim(),
+    title: String(vals.title || '').trim() || '活动',
+    subtitle: String(vals.subtitle || '').trim(),
+    promo: String(vals.promo || '').trim(),
+    cta: String(vals.cta || '').trim() || '立即选购',
+    image: String(vals.image || '').trim(),
+    bg: String(vals.bg || '').trim() || 'linear-gradient(135deg,#e4393c,#ff6b6b)',
+    goto: goto
+  };
+}
+
+function renderAdminHomeListPanel() {
+  var sel = document.getElementById('admin-banner-region');
+  var region = sel && sel.value;
+  var modeEl = document.getElementById('admin-home-featured-mode');
+  var pidEl = document.getElementById('admin-home-featured-pid');
+  var wrap = document.getElementById('admin-home-featured-manual-wrap');
+  if (!modeEl || !pidEl || !region) return;
+  var cfg = getHomeListConfig(region);
+  modeEl.value = cfg.featuredMode;
+  var pool = listProductsByRegion(region).filter(function (p) {
+    return p.onShelf !== false && p.showOnHome !== false;
+  });
+  var cur = cfg.featuredPid;
+  pidEl.innerHTML =
+    '<option value="">（请选择）</option>' +
+    pool
+      .map(function (p) {
+        return '<option value="' + escAttr(p.id) + '">' + escForHtml(p.name) + ' · ' + escForHtml(p.id) + '</option>';
+      })
+      .join('');
+  if (cur && pool.some(function (p) { return p.id === cur; })) pidEl.value = cur;
+  else pidEl.value = '';
+  if (wrap) wrap.style.display = cfg.featuredMode === 'manual' ? 'block' : 'none';
+  modeEl.onchange = function () {
+    if (wrap) wrap.style.display = modeEl.value === 'manual' ? 'block' : 'none';
+  };
+  var gmaxEl = document.getElementById('admin-home-grid-max');
+  if (gmaxEl) gmaxEl.value = String(cfg.gridMaxItems);
+}
+
+function adminSaveHomeListConfig() {
+  var sel = document.getElementById('admin-banner-region');
+  var region = sel && sel.value;
+  if (!region) return;
+  var mode = (document.getElementById('admin-home-featured-mode') || {}).value || 'sales';
+  var pid = (document.getElementById('admin-home-featured-pid') || {}).value || '';
+  var gmaxRaw = (document.getElementById('admin-home-grid-max') || {}).value;
+  if (mode === 'manual' && !pid) {
+    showToast('「指定」模式下请选择主推商品', 'error');
+    return;
+  }
+  saveHomeListConfig(region, mode, pid, gmaxRaw);
+  renderHome();
+  showToast('首页列表配置已保存（' + region + '）', 'success');
+}
+
+function renderAdminHomeBanners() {
+  var sel = document.getElementById('admin-banner-region');
+  var tb = document.getElementById('admin-banner-body');
+  if (sel) {
+    var prevRegion = sel.value;
+    sel.innerHTML = REGIONS.filter(function (r) { return r.enabled !== false; })
+      .map(function (r) {
+        return '<option value="' + escAttr(r.id) + '">' + escForHtml(r.name) + '</option>';
+      })
+      .join('');
+    if (prevRegion) {
+      for (var oi = 0; oi < sel.options.length; oi++) {
+        if (sel.options[oi].value === prevRegion) {
+          sel.selectedIndex = oi;
+          break;
+        }
+      }
+    }
+    if (!sel.value && sel.options.length) sel.selectedIndex = 0;
+    sel.onchange = function () {
+      renderAdminHomeBanners();
+    };
+  }
+  var region = sel && sel.value;
+  if (tb && region) {
+    var list = BANNERS[region] || [];
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="5" class="muted">暂无轮播，请点击「新增轮播」</td></tr>';
+    } else {
+      tb.innerHTML = list
+        .map(function (b, idx) {
+          var t = (b.title || b.text || '').slice(0, 28);
+          var hasImg = !!(b.image || '').trim();
+          var g = b.goto || {};
+          return (
+            '<tr><td>' +
+            (idx + 1) +
+            '</td><td>' +
+            escForHtml(t) +
+            '</td><td><span class="pill ' +
+            (hasImg ? 'on' : 'off') +
+            '">' +
+            (hasImg ? '图' : '渐变') +
+            '</span></td><td class="muted" style="font-size:12px">' +
+            escForHtml(g.type || '-') +
+            '</td><td class="table-actions">' +
+            '<button type="button" class="table-btn btn-outline" onclick="adminEditBanner(\'' +
+            escAttr(region) +
+            "'," +
+            idx +
+            ')">编辑</button>' +
+            '<button type="button" class="table-btn btn-danger" onclick="adminDeleteBanner(\'' +
+            escAttr(region) +
+            "'," +
+            idx +
+            ')">删除</button></td></tr>'
+          );
+        })
+        .join('');
+    }
+  } else if (tb) {
+    tb.innerHTML = '<tr><td colspan="5" class="muted">请选择区域</td></tr>';
+  }
+  renderAdminHomeListPanel();
+}
+
+function adminBannerAdd() {
+  var sel = document.getElementById('admin-banner-region');
+  var region = sel && sel.value;
+  if (!region) return;
+  openProtoForm({
+    title: '新增首页轮播',
+    fields: [
+      { name: 'kicker', label: '角标（小字）', value: '精选活动', placeholder: '如：时令生鲜' },
+      { name: 'title', label: '主标题', value: '', placeholder: '必填', required: true },
+      { name: 'subtitle', label: '副标题', value: '', placeholder: '一句话卖点' },
+      { name: 'promo', label: '促销行（橙色强调）', value: '' },
+      { name: 'cta', label: '按钮文案', value: '立即选购' },
+      { name: 'image', label: '背景图 URL（横图更佳）', value: '', placeholder: 'https://...' },
+      { name: 'bg', label: '无图时渐变（CSS）', value: 'linear-gradient(135deg,#e4393c,#ff6b6b)' },
+      { name: 'jumpType', label: '跳转类型 product / search / category', value: 'product' },
+      { name: 'jumpTarget', label: '跳转目标（商品ID / 关键词 / 分类名）', value: 'p_rice', placeholder: 'p_rice' }
+    ],
+    onSubmit: function (vals) {
+      if (!String(vals.title || '').trim()) {
+        showToast('请填写主标题', 'error');
+        return false;
+      }
+      if (!BANNERS[region]) BANNERS[region] = [];
+      BANNERS[region].push(adminBuildBannerFromVals(vals, null));
+      persistBanners();
+      carouselIndex = 0;
+      renderAdminHomeBanners();
+      renderHome();
+      showToast('已添加轮播', 'success');
+    }
+  });
+}
+
+function adminEditBanner(region, idx) {
+  var list = BANNERS[region] || [];
+  var b = list[idx];
+  if (!b) return;
+  var g = b.goto || { type: 'product', productId: 'p_rice' };
+  var jt = g.type || 'product';
+  var jv = g.productId || g.keyword || g.category || '';
+  openProtoForm({
+    title: '编辑轮播 · ' + region,
+    fields: [
+      { name: 'kicker', label: '角标', value: b.kicker || '' },
+      { name: 'title', label: '主标题', value: b.title || b.text || '', required: true },
+      { name: 'subtitle', label: '副标题', value: b.subtitle || '' },
+      { name: 'promo', label: '促销行', value: b.promo || '' },
+      { name: 'cta', label: '按钮文案', value: b.cta || '立即选购' },
+      { name: 'image', label: '背景图 URL', value: b.image || '' },
+      { name: 'bg', label: '无图时渐变（CSS）', value: b.bg || '' },
+      { name: 'jumpType', label: '跳转类型 product / search / category', value: jt },
+      { name: 'jumpTarget', label: '跳转目标', value: jv }
+    ],
+    onSubmit: function (vals) {
+      if (!String(vals.title || '').trim()) {
+        showToast('请填写主标题', 'error');
+        return false;
+      }
+      list[idx] = adminBuildBannerFromVals(vals, b.id);
+      persistBanners();
+      carouselIndex = 0;
+      renderAdminHomeBanners();
+      renderHome();
+      showToast('已保存', 'success');
+    }
+  });
+}
+
+function adminDeleteBanner(region, idx) {
+  showConfirm({
+    title: '删除轮播',
+    message: '确定删除该条首页轮播？',
+    okText: '删除',
+    danger: true,
+    onConfirm: function () {
+      var list = BANNERS[region];
+      if (!list || list[idx] == null) return;
+      list.splice(idx, 1);
+      if (!list.length) {
+        BANNERS[region] = JSON.parse(JSON.stringify(BANNERS_DEFAULT[region] || BANNERS_DEFAULT.EC || []));
+      }
+      persistBanners();
+      carouselIndex = 0;
+      renderAdminHomeBanners();
+      renderHome();
+      showToast('已删除', 'success');
+    }
+  });
+}
+
+function adminBannersResetDefaults() {
+  showConfirm({
+    title: '恢复默认',
+    message: '将清除本地保存的 Banner 配置，各区域恢复为内置演示数据。',
+    okText: '恢复',
+    danger: true,
+    onConfirm: function () {
+      try {
+        localStorage.removeItem('demo_banners');
+      } catch (e) {}
+      rebuildBanners();
+      carouselIndex = 0;
+      renderAdminHomeBanners();
+      renderHome();
+      showToast('已恢复默认 Banner', 'success');
+    }
+  });
+}
+
+function countProductsInCategory(name) {
+  return PRODUCTS.filter(function (p) { return p.category === name; }).length;
+}
+function countProductsInRegion(code) {
+  return PRODUCTS.filter(function (p) { return p.onShelf !== false && p.regions && p.regions.indexOf(code) !== -1; }).length;
+}
+
+function adminOrderStatusPill(st) {
+  var cls = 'pill ';
+  if (st === 'PENDING_PAY') cls += 'on';
+  else if (st === 'PENDING_SHIP') cls += 'ok';
+  else if (st === 'SHIPPED') cls += 'on';
+  else if (st === 'FINISHED') cls += 'ok';
+  else cls += 'off';
+  return '<span class="' + cls + '">' + orderStatusText(st) + '</span>';
+}
+
+function renderAdminDashboard() {
+  var t0 = startOfTodayMs();
+  var list = app.orders || [];
+  var today = list.filter(function (o) { return o.createdAt >= t0; });
+  var todaySales = today.reduce(function (s, o) {
+    if (o.status === 'CANCELED') return s;
+    return s + (Number(o.total) || 0);
+  }, 0);
+  var pend = list.filter(function (o) { return o.status === 'PENDING_SHIP'; }).length;
+  var el1 = document.getElementById('adm-dash-orders');
+  if (el1) el1.textContent = String(today.length);
+  var el2 = document.getElementById('adm-dash-sales');
+  if (el2) el2.textContent = formatPrice(todaySales);
+  var el3 = document.getElementById('adm-dash-ship');
+  if (el3) el3.textContent = String(pend);
+  var el4 = document.getElementById('adm-dash-users');
+  if (el4) el4.textContent = String(adminUsers.filter(function (u) { return !u.disabled; }).length);
+  var skuOn = 0;
+  PRODUCTS.forEach(function (p) {
+    if (p.onShelf === false) return;
+    skuOn += (p.skus && p.skus.length) ? p.skus.length : 0;
+  });
+  var el5 = document.getElementById('adm-dash-skus');
+  if (el5) el5.textContent = String(skuOn);
+  var tb = document.getElementById('adm-dash-orders-body');
+  if (tb) {
+    var recent = list.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).slice(0, 5);
+    if (!recent.length) tb.innerHTML = '<tr><td colspan="4" class="muted">暂无订单</td></tr>';
+    else {
+      tb.innerHTML = recent.map(function (o) {
+        return '<tr><td>' + escForHtml(o.no) + '</td><td>' + formatPrice(o.total) + '</td><td>' + adminOrderStatusPill(o.status) + '</td><td class="muted" style="font-size:12px">' + adminFmtTime(o.createdAt) + '</td></tr>';
+      }).join('');
+    }
+  }
+}
+
+function renderAdminProducts() {
+  var tb = document.getElementById('admin-products-body');
+  var filterEl = document.getElementById('admin-products-category-filter');
+  if (!tb) return;
+  var prevCat = filterEl ? filterEl.value : '';
+  if (filterEl) {
+    filterEl.innerHTML =
+      '<option value="">全部</option>' +
+      CATEGORIES.map(function (c) {
+        return '<option value="' + escAttr(c) + '">' + escForHtml(c) + '</option>';
+      }).join('');
+    if (prevCat === '' || CATEGORIES.indexOf(prevCat) >= 0) filterEl.value = prevCat;
+    else filterEl.value = '';
+  }
+  var catFilter = filterEl && filterEl.value ? filterEl.value : '';
+  var pool = catFilter ? PRODUCTS.filter(function (p) { return p.category === catFilter; }) : PRODUCTS.slice();
+  var sorted = pool.sort(function (a, b) {
+    var sa = a.onShelf !== false ? 1 : 0;
+    var sb = b.onShelf !== false ? 1 : 0;
+    if (sa !== sb) return sb - sa;
+    var ha = a.showOnHome !== false ? 1 : 0;
+    var hb = b.showOnHome !== false ? 1 : 0;
+    return hb - ha;
+  });
+  if (!sorted.length) {
+    tb.innerHTML = '<tr><td colspan="9" class="muted">该分类下暂无商品</td></tr>';
+    return;
+  }
+  tb.innerHTML = sorted.map(function (p) {
+    var pri = productMinPrice(p);
+    var stc = productTotalStock(p);
+    var up = p.onShelf !== false
+      ? '<span class="pill on clickable" role="button" tabindex="0" onclick="adminToggleShelf(\'' + p.id + '\')">上架</span>'
+      : '<span class="pill off clickable" role="button" tabindex="0" onclick="adminToggleShelf(\'' + p.id + '\')">下架</span>';
+    var priceCell = (p.skus && p.skus.length > 1) ? (formatPrice(pri) + '起') : formatPrice(pri);
+    var hom = p.showOnHome !== false
+      ? '<span class="pill on clickable" role="button" tabindex="0" onclick="adminToggleShowOnHome(\'' + p.id + '\')">展示</span>'
+      : '<span class="pill off clickable" role="button" tabindex="0" onclick="adminToggleShowOnHome(\'' + p.id + '\')">不展示</span>';
+    return '<tr><td><div style="width:44px;height:44px;border-radius:8px;' + productImgStyle(p) + '"></div></td><td style="font-size:11px;color:#666">' + escForHtml(p.id) + '</td><td>' + escForHtml(p.name) + '</td><td>' + escForHtml(p.category) + '</td><td>' + priceCell + '</td><td>' + stc + '</td><td>' + up + '</td><td>' + hom + '</td><td class="table-actions"><button type="button" class="table-btn btn-outline" onclick="adminOpenProductEditor(\'' + p.id + '\')">编辑</button></td></tr>';
+  }).join('');
+}
+
+function renderAdminOrders() {
+  var tb = document.getElementById('admin-orders-body');
+  if (!tb) return;
+  var list = (app.orders || []).slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="7" class="muted">暂无订单</td></tr>'; return; }
+  tb.innerHTML = list.map(function (o) {
+    var first = o.items && o.items[0] ? o.items[0].name : '-';
+    var user = o.addressSnapshot && o.addressSnapshot.name ? o.addressSnapshot.name : '-';
+    var btns = '<button type="button" class="table-btn btn-outline" onclick="adminOrderDetail(\'' + o.id + '\')">详情</button>';
+    if (o.status === 'PENDING_SHIP') btns += '<button type="button" class="table-btn btn-success" onclick="adminShipOrder(\'' + o.id + '\')">发货</button>';
+    return '<tr><td>' + escForHtml(o.no) + '</td><td>' + escForHtml(user) + '</td><td>' + escForHtml(first) + '</td><td>' + formatPrice(o.total) + '</td><td>' + adminOrderStatusPill(o.status) + '</td><td class="muted" style="font-size:12px">' + adminFmtTime(o.createdAt) + '</td><td class="table-actions">' + btns + '</td></tr>';
+  }).join('');
+}
+
+function adminOrderDetail(id) {
+  var o = findOrder(id);
+  if (!o) return;
+  var title = document.getElementById('admin-order-modal-title');
+  if (title) title.textContent = '订单 ' + o.no;
+  var body = document.getElementById('admin-order-modal-body');
+  if (body) {
+    var lines = [];
+    lines.push('<div><b>状态</b>：' + orderStatusText(o.status) + '</div>');
+    lines.push('<div style="margin-top:8px"><b>收货</b>：' + escForHtml(o.addressSnapshot.name) + ' ' + escForHtml(maskPhone(o.addressSnapshot.phone)) + '<div class="muted" style="margin-top:4px">' + escForHtml(o.addressSnapshot.full) + '</div></div>');
+    lines.push('<div style="margin-top:10px"><b>商品</b></div><ul style="margin:6px 0 0 18px">');
+    (o.items || []).forEach(function (it) {
+      lines.push('<li>' + escForHtml(it.name) + ' ×' + it.qty + ' · ' + formatPrice(it.price * it.qty) + '</li>');
+    });
+    lines.push('</ul><div style="margin-top:10px;font-weight:800">合计 ' + formatPrice(o.total) + '</div>');
+    body.innerHTML = lines.join('');
+  }
+  document.getElementById('admin-order-modal').classList.add('active');
+}
+function closeAdminOrderModal() {
+  var m = document.getElementById('admin-order-modal');
+  if (m) m.classList.remove('active');
+}
+
+function adminShipOrder(id) {
+  var o = findOrder(id);
+  if (!o) return;
+  if (o.status !== 'PENDING_SHIP') return showToast('当前状态不可发货', 'error');
+  o.status = 'SHIPPED';
+  o.shippedAt = Date.now();
+  saveOrders();
+  renderOrderList();
+  if (app.currentOrderId === id) renderOrderDetail(id);
+  adminRefresh('orders');
+  adminRefresh('dashboard');
+}
+
+function renderAdminUsers() {
+  var tb = document.getElementById('admin-users-body');
+  if (!tb) return;
+  tb.innerHTML = adminUsers.map(function (u) {
+    var mask = u.phone && u.phone.length === 11 ? u.phone.slice(0, 3) + '****' + u.phone.slice(7) : u.phone;
+    var dis = u.disabled ? '<span class="pill off">禁用</span>' : '<span class="pill on">正常</span>';
+    var btn = u.disabled
+      ? '<button type="button" class="table-btn btn-success" onclick="adminToggleUser(\'' + u.id + '\')">启用</button>'
+      : '<button type="button" class="table-btn btn-danger" onclick="adminToggleUser(\'' + u.id + '\')">禁用</button>';
+    return '<tr><td>' + escForHtml(u.id) + '</td><td>' + escForHtml(u.nick) + '</td><td>' + escForHtml(mask) + '</td><td>' + u.orders + '</td><td>' + formatPrice(u.spend) + '</td><td class="muted" style="font-size:12px">' + escForHtml(u.reg) + '</td><td class="table-actions">' + dis + ' <button type="button" class="table-btn btn-outline" onclick="adminEditUser(\'' + u.id + '\')">编辑</button>' + btn + '</td></tr>';
+  }).join('');
+}
+
+function adminAddUser() {
+  openProtoForm({
+    title: '添加用户',
+    fields: [
+      { name: 'nick', label: '用户昵称', value: '新用户', required: true },
+      { name: 'phone', label: '手机号', value: '13800000000', required: true }
+    ],
+    onSubmit: function (vals) {
+      var nick = (vals.nick || '').trim() || '新用户';
+      var phone = (vals.phone || '').trim() || '13800000000';
+      if (!/^1\d{10}$/.test(phone)) {
+        showToast('请输入 11 位有效手机号', 'error');
+        return false;
+      }
+      adminUsers.unshift({ id: 'u' + Date.now(), nick: nick, phone: phone, orders: 0, spend: 0, reg: adminFmtTime(Date.now()), disabled: false });
+      saveAdminUsers();
+      renderAdminUsers();
+      renderAdminDashboard();
+      showToast('用户已添加', 'success');
+    }
+  });
+}
+function adminEditUser(id) {
+  var u = adminUsers.find(function (x) { return x.id === id; });
+  if (!u) return;
+  openProtoForm({
+    title: '编辑用户',
+    fields: [{ name: 'nick', label: '昵称', value: u.nick, required: true }],
+    onSubmit: function (vals) {
+      var nick = (vals.nick || '').trim();
+      if (!nick) {
+        showToast('昵称不能为空', 'error');
+        return false;
+      }
+      u.nick = nick;
+      saveAdminUsers();
+      renderAdminUsers();
+      showToast('已保存', 'success');
+    }
+  });
+}
+function adminToggleUser(id) {
+  var u = adminUsers.find(function (x) { return x.id === id; });
+  if (!u) return;
+  u.disabled = !u.disabled;
+  saveAdminUsers();
+  renderAdminUsers();
+  renderAdminDashboard();
+}
+
+function renderAdminCategories() {
+  var tb = document.getElementById('admin-categories-body');
+  if (!tb) return;
+  adminCategories.sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); });
+  tb.innerHTML = adminCategories.map(function (c) {
+    var cnt = countProductsInCategory(c.name);
+    var st = c.enabled ? '<span class="pill on">启用</span>' : '<span class="pill off">禁用</span>';
+    var btn = c.enabled
+      ? '<button type="button" class="table-btn btn-danger" onclick="adminToggleCategory(\'' + c.id + '\')">禁用</button>'
+      : '<button type="button" class="table-btn btn-success" onclick="adminToggleCategory(\'' + c.id + '\')">启用</button>';
+    return '<tr><td>' + escForHtml(c.id) + '</td><td>' + escForHtml(c.name) + '</td><td>' + cnt + '</td><td>' + st + '</td><td class="table-actions"><button type="button" class="table-btn btn-outline" onclick="adminEditCategory(\'' + c.id + '\')">编辑</button>' + btn + '</td></tr>';
+  }).join('');
+}
+
+function adminAddCategory() {
+  openProtoForm({
+    title: '新增分类',
+    fields: [{ name: 'name', label: '分类名称', value: '', placeholder: '如：粮油调味', required: true }],
+    onSubmit: function (vals) {
+      var name = (vals.name || '').trim();
+      if (!name) {
+        showToast('名称不能为空', 'error');
+        return false;
+      }
+      if (adminCategories.some(function (c) { return c.name === name; })) {
+        showToast('已存在同名分类', 'error');
+        return false;
+      }
+      var maxSort = adminCategories.reduce(function (m, c) { return Math.max(m, c.sort || 0); }, 0);
+      adminCategories.push({ id: 'c' + Date.now(), name: name, enabled: true, sort: maxSort + 1 });
+      saveAdminCategories();
+      refreshCategoriesFromAdmin();
+      renderCategoryTabs();
+      renderCategory();
+      renderHome();
+      renderAdminCategories();
+      renderAdminProducts();
+      showToast('分类已添加', 'success');
+    }
+  });
+}
+function adminEditCategory(id) {
+  var c = adminCategories.find(function (x) { return x.id === id; });
+  if (!c) return;
+  openProtoForm({
+    title: '编辑分类',
+    fields: [{ name: 'name', label: '分类名称', value: c.name, required: true }],
+    onSubmit: function (vals) {
+      var name = (vals.name || '').trim();
+      if (!name) {
+        showToast('名称不能为空', 'error');
+        return false;
+      }
+      var old = c.name;
+      c.name = name;
+      PRODUCTS.forEach(function (p) { if (p.category === old) p.category = name; });
+      saveAdminCategories();
+      persistProducts();
+      refreshCategoriesFromAdmin();
+      renderCategoryTabs();
+      renderCategory();
+      renderAdminCategories();
+      renderAdminProducts();
+      renderHome();
+      showToast('分类已更新', 'success');
+    }
+  });
+}
+function adminToggleCategory(id) {
+  var c = adminCategories.find(function (x) { return x.id === id; });
+  if (!c) return;
+  c.enabled = !c.enabled;
+  saveAdminCategories();
+  refreshCategoriesFromAdmin();
+  initAppRegionCategory();
+  renderCategoryTabs();
+  renderCategory();
+  renderHome();
+  renderAdminCategories();
+  renderAdminProducts();
+  renderAdminInventory();
+}
+
+function renderAdminRegions() {
+  var tb = document.getElementById('admin-regions-body');
+  if (!tb) return;
+  tb.innerHTML = REGIONS.map(function (r) {
+    var cnt = countProductsInRegion(r.id);
+    var en = r.enabled !== false;
+    var btn = en
+      ? '<button type="button" class="table-btn btn-danger" onclick="adminToggleRegion(\'' + r.id + '\')">禁用区域</button>'
+      : '<button type="button" class="table-btn btn-success" onclick="adminToggleRegion(\'' + r.id + '\')">启用区域</button>';
+    return '<tr><td>' + escForHtml(r.id) + '</td><td>' + escForHtml(r.name) + (en ? '' : ' <span class="pill off">已禁用</span>') + '</td><td>' + cnt + '</td><td class="table-actions"><button type="button" class="table-btn btn-outline" onclick="adminEditRegionName(\'' + r.id + '\')">改名</button><button type="button" class="table-btn btn-outline" onclick="adminOpenRegionProducts(\'' + r.id + '\')">配置商品</button>' + btn + '</td></tr>';
+  }).join('');
+}
+
+function adminEditRegionName(id) {
+  var r = REGIONS.find(function (x) { return x.id === id; });
+  if (!r) return;
+  openProtoForm({
+    title: '修改区域名称',
+    fields: [{ name: 'name', label: '区域名称', value: r.name, required: true }],
+    onSubmit: function (vals) {
+      var name = (vals.name || '').trim();
+      if (!name) {
+        showToast('名称不能为空', 'error');
+        return false;
+      }
+      r.name = name;
+      persistRegionsMeta();
+      renderAdminRegions();
+      syncRegionUI();
+      showToast('已保存', 'success');
+    }
+  });
+}
+function adminToggleRegion(id) {
+  var r = REGIONS.find(function (x) { return x.id === id; });
+  if (!r) return;
+  r.enabled = r.enabled === false ? true : false;
+  persistRegionsMeta();
+  initAppRegionCategory();
+  syncRegionUI();
+  renderRegionTags();
+  renderHome();
+  renderCategory();
+  renderAdminRegions();
+  renderAdminDashboard();
+}
+
+function adminAddRegion() {
+  openProtoForm({
+    title: '新增销售区域',
+    fields: [
+      { name: 'code', label: '区域编码（2–8 位，如 XJ、SW）', value: '', placeholder: '仅字母、数字、下划线', required: true },
+      { name: 'name', label: '区域名称', value: '新区域', required: true }
+    ],
+    onSubmit: function (vals) {
+      var code = String(vals.code || '')
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9_]/g, '');
+      var name = String(vals.name || '').trim();
+      if (code.length < 2 || code.length > 8) {
+        showToast('编码长度应为 2–8 位（仅字母、数字、下划线）', 'error');
+        return false;
+      }
+      if (REGIONS.some(function (r) { return r.id === code; })) {
+        showToast('该编码已存在', 'error');
+        return false;
+      }
+      if (!name) name = code;
+      REGIONS.push({ id: code, name: name, enabled: true });
+      BANNERS[code] = JSON.parse(JSON.stringify(BANNERS_DEFAULT[code] || BANNERS_DEFAULT.EC || []));
+      persistBanners();
+      persistRegionsMeta();
+      initAppRegionCategory();
+      renderRegionTags();
+      syncRegionUI();
+      renderHome();
+      renderCategory();
+      renderAdminRegions();
+      renderAdminDashboard();
+      showToast('区域已添加。请到「配置商品」中为商品勾选该区域后，用户端才有商品可售。', 'info');
+    }
+  });
+}
+
+function adminOpenRegionProducts(code) {
+  adminEditingRegionCode = code;
+  var r = REGIONS.find(function (x) { return x.id === code; });
+  var t = document.getElementById('admin-region-modal-title');
+  if (t) t.textContent = '区域「' + (r ? r.name : code) + '」可售商品';
+  var list = document.getElementById('admin-region-modal-list');
+  if (list) {
+    list.innerHTML = PRODUCTS.map(function (p) {
+      var checked = p.regions && p.regions.indexOf(code) !== -1;
+      return '<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;cursor:pointer"><input type="checkbox" data-rpid="' + p.id + '" ' + (checked ? 'checked' : '') + '/><span>' + escForHtml(p.name) + '</span><span class="muted" style="font-size:12px;margin-left:auto">' + escForHtml(p.id) + '</span></label>';
+    }).join('');
+  }
+  document.getElementById('admin-region-products-modal').classList.add('active');
+}
+function closeAdminRegionModal() {
+  adminEditingRegionCode = null;
+  var m = document.getElementById('admin-region-products-modal');
+  if (m) m.classList.remove('active');
+}
+function adminSaveRegionProducts() {
+  if (!adminEditingRegionCode) return;
+  var code = adminEditingRegionCode;
+  var boxes = document.querySelectorAll('#admin-region-modal-list input[type=checkbox]');
+  boxes.forEach(function (bx) {
+    var pid = bx.dataset.rpid;
+    var p = PRODUCTS.find(function (x) { return x.id === pid; });
+    if (!p) return;
+    p.regions = p.regions || [];
+    if (bx.checked) {
+      if (p.regions.indexOf(code) === -1) p.regions.push(code);
+    } else {
+      p.regions = p.regions.filter(function (x) { return x !== code; });
+    }
+    if (!p.regions.length) p.regions = regionsActive().map(function (r) { return r.id; });
+  });
+  persistProducts();
+  closeAdminRegionModal();
+  renderAdminRegions();
+  renderHome();
+  renderCategory();
+  renderAdminInventory();
+}
+
+function invSkuStatus(stock, alert) {
+  if (stock <= 0) return { text: '售罄', cls: 'off' };
+  if (stock <= alert) return { text: '预警', cls: 'on' };
+  return { text: '正常', cls: 'ok' };
+}
+
+function renderAdminInventory() {
+  var rows = [];
+  PRODUCTS.forEach(function (p) {
+    (p.skus || []).forEach(function (s) {
+      rows.push({ p: p, s: s });
+    });
+  });
+  var total = rows.length;
+  var ok = 0, warn = 0, zero = 0;
+  rows.forEach(function (r) {
+    var st = invSkuStatus(r.s.stock, r.s.alert);
+    if (st.text === '售罄') zero++;
+    else if (st.text === '预警') warn++;
+    else ok++;
+  });
+  var e1 = document.getElementById('adm-inv-total'); if (e1) e1.textContent = String(total);
+  var e2 = document.getElementById('adm-inv-ok'); if (e2) e2.textContent = String(ok);
+  var e3 = document.getElementById('adm-inv-warn'); if (e3) e3.textContent = String(warn);
+  var e4 = document.getElementById('adm-inv-zero'); if (e4) e4.textContent = String(zero);
+  var tb = document.getElementById('admin-inventory-body');
+  if (!tb) return;
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="muted">暂无 SKU</td></tr>'; return; }
+  tb.innerHTML = rows.map(function (r) {
+    var st = invSkuStatus(r.s.stock, r.s.alert);
+    return '<tr><td>' + escForHtml(r.p.name) + '</td><td>' + escForHtml(r.s.label) + '</td><td>' + r.s.stock + '</td><td>' + r.s.alert + '</td><td><span class="pill ' + st.cls + '">' + st.text + '</span></td><td class="table-actions"><button type="button" class="table-btn btn-outline" onclick="adminRestockSku(\'' + r.p.id + '\',\'' + r.s.id + '\')">补货</button></td></tr>';
+  }).join('');
+}
+
+function adminRestockSku(pid, sid) {
+  var p = getProduct(pid);
+  var sku = (p.skus || []).find(function (x) { return x.id === sid; });
+  if (!sku) return;
+  openProtoForm({
+    title: '补货 · ' + (p.name || '') + ' / ' + (sku.label || ''),
+    fields: [{ name: 'qty', label: '增加库存数量', inputType: 'number', value: '10', min: 1, step: 1, required: true }],
+    onSubmit: function (vals) {
+      var add = parseInt(vals.qty, 10);
+      if (!add || add < 1) {
+        showToast('请输入正整数', 'error');
+        return false;
+      }
+      sku.stock = (Number(sku.stock) || 0) + add;
+      persistProducts();
+      renderAdminInventory();
+      renderAdminProducts();
+      renderHome();
+      renderCategory();
+      showToast('已补货 ' + add + ' 件', 'success');
+    }
+  });
+}
+
+function renderAdminSettingsForm() {
+  var i1 = document.getElementById('adm-pay-mchid');
+  var i2 = document.getElementById('adm-pay-secret');
+  if (i1) i1.value = adminPay.mchid || '';
+  if (i2) i2.value = adminPay.secret || '';
+  var tb = document.getElementById('admin-accounts-body');
+  if (!tb) return;
+  tb.innerHTML = adminAccounts.map(function (a) {
+    var st = a.disabled ? '<span class="pill off">禁用</span>' : '<span class="pill on">正常</span>';
+    var btn = a.disabled
+      ? '<button type="button" class="table-btn btn-success" onclick="adminToggleAccount(\'' + a.id + '\')">启用</button>'
+      : '<button type="button" class="table-btn btn-danger" onclick="adminToggleAccount(\'' + a.id + '\')">禁用</button>';
+    return '<tr><td>' + escForHtml(a.id) + '</td><td>' + escForHtml(a.name) + '</td><td>' + escForHtml(a.role) + '</td><td>' + st + '</td><td class="muted" style="font-size:12px">' + escForHtml(a.lastLogin) + '</td><td class="table-actions"><button type="button" class="table-btn btn-outline" onclick="adminEditAccount(\'' + a.id + '\')">编辑</button>' + btn + '</td></tr>';
+  }).join('');
+}
+
+function adminSavePaySettings() {
+  adminPay.mchid = (document.getElementById('adm-pay-mchid') || {}).value || '';
+  adminPay.secret = (document.getElementById('adm-pay-secret') || {}).value || '';
+  saveAdminPayStore();
+  showToast('支付配置已保存到本地', 'success');
+}
+function adminAddAccount() {
+  openProtoForm({
+    title: '添加后台账号',
+    fields: [
+      { name: 'name', label: '用户名', value: 'operator', required: true },
+      { name: 'role', label: '角色', value: '运营', required: true }
+    ],
+    onSubmit: function (vals) {
+      var name = (vals.name || '').trim();
+      var role = (vals.role || '').trim() || '运营';
+      if (!name) {
+        showToast('用户名不能为空', 'error');
+        return false;
+      }
+      adminAccounts.push({ id: String(Date.now()), name: name, role: role, disabled: false, lastLogin: '-' });
+      saveAdminAccounts();
+      renderAdminSettingsForm();
+      showToast('账号已添加', 'success');
+    }
+  });
+}
+function adminEditAccount(id) {
+  var a = adminAccounts.find(function (x) { return x.id === id; });
+  if (!a) return;
+  openProtoForm({
+    title: '编辑账号 · ' + a.name,
+    fields: [{ name: 'role', label: '角色', value: a.role, required: true }],
+    onSubmit: function (vals) {
+      a.role = (vals.role || '').trim() || a.role;
+      a.lastLogin = adminFmtTime(Date.now());
+      saveAdminAccounts();
+      renderAdminSettingsForm();
+      showToast('已保存', 'success');
+    }
+  });
+}
+function adminToggleAccount(id) {
+  var a = adminAccounts.find(function (x) { return x.id === id; });
+  if (!a) return;
+  a.disabled = !a.disabled;
+  saveAdminAccounts();
+  renderAdminSettingsForm();
+}
+
+function adminFillCategorySelect() {
+  var sel = document.getElementById('product-category');
+  if (!sel) return;
+  sel.innerHTML = CATEGORIES.map(function (c) {
+    return '<option value="' + escAttr(c) + '">' + escForHtml(c) + '</option>';
+  }).join('');
+}
+function adminFillRegionModeSelect() {
+  var sel = document.getElementById('product-region-mode');
+  if (!sel) return;
+  var html = '<option value="__all__">全国（当前已启用的区域）</option>';
+  regionsActive().forEach(function (r) {
+    html += '<option value="' + r.id + '">仅' + escForHtml(r.name) + '</option>';
+  });
+  sel.innerHTML = html;
+}
+function adminGuessRegionMode(p) {
+  var act = regionsActive().map(function (r) { return r.id; }).slice().sort().join(',');
+  var pr = (p.regions || []).slice().sort().join(',');
+  if (pr === act) return '__all__';
+  if ((p.regions || []).length === 1) return p.regions[0];
+  return '__all__';
+}
+function adminApplyRegionModeToProduct(p, mode) {
+  if (mode === '__all__') p.regions = regionsActive().map(function (r) { return r.id; });
+  else p.regions = [mode];
+}
+
+function adminSkuAppendRow(sku) {
+  var tb = document.getElementById('product-modal-sku-body');
+  if (!tb) return;
+  var tr = document.createElement('tr');
+  if (sku && sku.id) tr.dataset.skuId = sku.id;
+  tr.innerHTML =
+    '<td><input type="text" class="form-control sku-inp-label" style="padding:6px;font-size:12px" /></td>' +
+    '<td><input type="number" class="sku-inp-price" style="width:76px;padding:4px" /></td>' +
+    '<td><input type="number" class="sku-inp-stock" style="width:76px;padding:4px" /></td>' +
+    '<td><input type="number" class="sku-inp-alert" style="width:76px;padding:4px" /></td>' +
+    '<td><button type="button" class="table-btn btn-danger sku-del">×</button></td>';
+  tr.querySelector('.sku-inp-label').value = sku && sku.label ? sku.label : '';
+  tr.querySelector('.sku-inp-price').value = sku && sku.price != null ? sku.price : 0;
+  tr.querySelector('.sku-inp-stock').value = sku && sku.stock != null ? sku.stock : 0;
+  tr.querySelector('.sku-inp-alert').value = sku && sku.alert != null ? sku.alert : 10;
+  tb.appendChild(tr);
+}
+
+function adminReadSkusFromModal() {
+  var rows = document.querySelectorAll('#product-modal-sku-body tr');
+  var skus = [];
+  rows.forEach(function (tr) {
+    var lab = ((tr.querySelector('.sku-inp-label') || {}).value || '').trim();
+    var price = parseFloat((tr.querySelector('.sku-inp-price') || {}).value, 10);
+    var stock = parseInt((tr.querySelector('.sku-inp-stock') || {}).value, 10);
+    var alert = parseInt((tr.querySelector('.sku-inp-alert') || {}).value, 10);
+    if (!lab) return;
+    if (isNaN(price) || price < 0) price = 0;
+    if (isNaN(stock)) stock = 0;
+    if (isNaN(alert)) alert = 10;
+    var id = tr.dataset.skuId || ('sku_' + Date.now() + '_' + Math.random().toString(16).slice(2, 8));
+    skus.push({ id: id, label: lab, price: price, stock: stock, alert: alert });
+  });
+  return skus;
+}
+
+function adminUpdateCoverPreview() {
+  var prev = document.getElementById('product-cover-preview');
+  var inp = document.getElementById('product-cover');
+  if (!prev) return;
+  var u = (inp && inp.value || '').trim();
+  var eid = (document.getElementById('product-edit-id') || {}).value;
+  var p;
+  if (u) p = { id: eid || 'new', cover: u };
+  else if (eid && PRODUCTS.some(function (x) { return x.id === eid; })) p = getProduct(eid);
+  else p = { id: 'p_rice' };
+  prev.setAttribute('style', 'width:120px;height:120px;margin-top:10px;border-radius:10px;' + productImgStyle(p));
 }
 
 function showProductModal() {
   document.getElementById('product-modal').classList.add('active');
 }
-
 function closeProductModal() {
   document.getElementById('product-modal').classList.remove('active');
 }
 
-function saveProduct() {
-  closeProductModal();
-  alert('商品已保存（演示）');
-}
-
-function editProduct(id) {
+function adminOpenProductEditor(pid) {
+  adminFillCategorySelect();
+  adminFillRegionModeSelect();
+  var titleEl = document.getElementById('product-modal-title');
+  if (titleEl) titleEl.textContent = pid ? '编辑商品' : '添加商品';
+  document.getElementById('product-edit-id').value = pid || '';
+  var tb = document.getElementById('product-modal-sku-body');
+  if (tb) tb.innerHTML = '';
+  if (pid) {
+    var p = getProduct(pid);
+    document.getElementById('product-name').value = p.name || '';
+    document.getElementById('product-category').value = p.category || CATEGORIES[0];
+    document.getElementById('product-status').value = p.onShelf === false ? '下架' : '上架';
+    document.getElementById('product-region-mode').value = adminGuessRegionMode(p);
+    (p.skus || []).forEach(function (s) { adminSkuAppendRow(s); });
+    document.getElementById('product-desc').value = p.desc || '';
+    var cInp = document.getElementById('product-cover');
+    if (cInp) cInp.value = ((p.cover || p.image || '') + '').trim();
+    var tg = document.getElementById('product-tag');
+    if (tg) tg.value = (p.tag || '') + '';
+    var ln = document.getElementById('product-line');
+    if (ln) ln.value = p.linePrice != null ? String(p.linePrice) : '';
+    var pl = document.getElementById('product-promo-line');
+    if (pl) pl.value = (p.promoLine || '') + '';
+    var sh = document.getElementById('product-show-on-home');
+    if (sh) sh.checked = p.showOnHome !== false;
+  } else {
+    document.getElementById('product-name').value = '';
+    document.getElementById('product-category').value = CATEGORIES[0] || '';
+    document.getElementById('product-status').value = '上架';
+    document.getElementById('product-region-mode').value = '__all__';
+    adminSkuAppendRow({ id: '', label: '默认规格', price: 0, stock: 0, alert: 10 });
+    document.getElementById('product-desc').value = '';
+    var cInp2 = document.getElementById('product-cover');
+    if (cInp2) cInp2.value = '';
+    var tg0 = document.getElementById('product-tag');
+    if (tg0) tg0.value = '';
+    var ln0 = document.getElementById('product-line');
+    if (ln0) ln0.value = '';
+    var pl0 = document.getElementById('product-promo-line');
+    if (pl0) pl0.value = '';
+    var sh0 = document.getElementById('product-show-on-home');
+    if (sh0) sh0.checked = true;
+  }
+  adminUpdateCoverPreview();
   showProductModal();
 }
 
-function toggleProduct(id) {
-  alert('已切换商品状态（演示）');
+function saveProduct() {
+  var pid = document.getElementById('product-edit-id').value.trim();
+  var name = (document.getElementById('product-name') || {}).value.trim();
+  var cat = (document.getElementById('product-category') || {}).value;
+  var st = (document.getElementById('product-status') || {}).value;
+  var mode = (document.getElementById('product-region-mode') || {}).value;
+  var desc = (document.getElementById('product-desc') || {}).value.trim();
+  var coverVal = ((document.getElementById('product-cover') || {}).value || '').trim();
+  var tagM = ((document.getElementById('product-tag') || {}).value || '').trim();
+  var lineInp = (document.getElementById('product-line') || {}).value;
+  var promoM = ((document.getElementById('product-promo-line') || {}).value || '').trim();
+  if (!name) return showToast('请填写商品名称', 'error');
+  var skus = adminReadSkusFromModal();
+  if (!skus.length) return showToast('请至少填写一个 SKU 规格名称', 'error');
+  var p;
+  if (pid) {
+    p = getProduct(pid);
+    if (!p) return;
+  } else {
+    p = { id: 'p_adm_' + Date.now(), name: name, category: cat, sales: 0, regions: [], skus: [], onShelf: true };
+    PRODUCTS.push(p);
+  }
+  p.name = name;
+  p.category = cat;
+  p.onShelf = st !== '下架';
+  p.desc = desc;
+  if (coverVal) p.cover = coverVal;
+  else delete p.cover;
+  if (tagM) p.tag = tagM;
+  else delete p.tag;
+  var lineNum = parseFloat(lineInp);
+  if (lineInp !== '' && !isNaN(lineNum) && lineNum > 0) p.linePrice = lineNum;
+  else delete p.linePrice;
+  if (promoM) p.promoLine = promoM;
+  else delete p.promoLine;
+  var showHomeEl = document.getElementById('product-show-on-home');
+  if (showHomeEl && showHomeEl.checked) p.showOnHome = true;
+  else if (showHomeEl) p.showOnHome = false;
+  p.skus = skus;
+  adminApplyRegionModeToProduct(p, mode);
+  normalizeProduct(p);
+  persistProducts();
+  closeProductModal();
+  renderHome();
+  renderCategory();
+  renderSearchResult();
+  renderCart();
+  adminRefresh('products');
+  adminRefresh('inventory');
+  adminRefresh('dashboard');
+  adminRefresh('categories');
+  adminRefresh('homeops');
+  showToast('商品已保存', 'success');
 }
 
+function adminToggleShelf(pid) {
+  var p = getProduct(pid);
+  if (!p) return;
+  p.onShelf = p.onShelf === false ? true : false;
+  persistProducts();
+  renderHome();
+  renderCategory();
+  renderSearchResult();
+  renderCart();
+  adminRefresh('products');
+  adminRefresh('inventory');
+  adminRefresh('dashboard');
+}
+
+function adminToggleShowOnHome(pid) {
+  var p = getProduct(pid);
+  if (!p) return;
+  p.showOnHome = p.showOnHome === false ? true : false;
+  persistProducts();
+  renderHome();
+  renderCategory();
+  renderSearchResult();
+  renderCart();
+  adminRefresh('products');
+  adminRefresh('inventory');
+  adminRefresh('dashboard');
+  adminRefresh('homeops');
+}
+
+function editProduct(id) {
+  var p = PRODUCTS[parseInt(id, 10) - 1];
+  if (p) adminOpenProductEditor(p.id);
+  else adminOpenProductEditor(String(id));
+}
+function toggleProduct(id) {
+  var p = PRODUCTS[parseInt(id, 10) - 1];
+  if (p) adminToggleShelf(p.id);
+}
+
+// ====== 地址：列表/新增/编辑/删除/默认规则；下单选择 ======
+var addrListEl = document.getElementById('addr-list');
+var addrAddBtn = document.getElementById('addr-add');
+var editingAddressId = null;
+
+function clearAddressFieldErrors() {
+  ['name', 'phone', 'province', 'city', 'district', 'detail'].forEach(function (k) {
+    var e = document.getElementById('addr-err-' + k);
+    if (e) {
+      e.textContent = '';
+      e.classList.remove('visible');
+    }
+    var g = document.getElementById('addr-grp-' + k);
+    if (g) g.classList.remove('has-error');
+  });
+}
+function setAddressFieldError(k, msg) {
+  var e = document.getElementById('addr-err-' + k);
+  if (e) {
+    e.textContent = msg;
+    e.classList.add('visible');
+  }
+  var g = document.getElementById('addr-grp-' + k);
+  if (g) g.classList.add('has-error');
+}
+
+function clearAddressForm() {
+  editingAddressId = null;
+  clearAddressFieldErrors();
+  if (document.getElementById('addr-name')) document.getElementById('addr-name').value = '';
+  if (document.getElementById('addr-phone')) document.getElementById('addr-phone').value = '';
+  if (document.getElementById('addr-province')) document.getElementById('addr-province').value = '';
+  if (document.getElementById('addr-city')) document.getElementById('addr-city').value = '';
+  if (document.getElementById('addr-detail')) document.getElementById('addr-detail').value = '';
+  if (document.getElementById('addr-district')) document.getElementById('addr-district').value = '';
+  if (document.getElementById('addr-default')) document.getElementById('addr-default').checked = false;
+}
+
+function fillAddressForm(a) {
+  editingAddressId = a.id;
+  clearAddressFieldErrors();
+  document.getElementById('addr-name').value = a.name || '';
+  document.getElementById('addr-phone').value = a.phone || '';
+  document.getElementById('addr-province').value = a.province || '';
+  document.getElementById('addr-city').value = a.city || '';
+  var dist = document.getElementById('addr-district');
+  if (dist) dist.value = a.district || '';
+  document.getElementById('addr-detail').value = a.detail || '';
+  document.getElementById('addr-default').checked = !!a.isDefault;
+}
+
+function renderAddressList() {
+  if (!addrListEl) return;
+  if (!app.addresses.length) { addrListEl.innerHTML = '<div class="empty">暂无地址，请新增</div>'; return; }
+  var sel = getSelectedAddress();
+  addrListEl.innerHTML = app.addresses
+    .slice()
+    .sort(function(a,b){ return (b.updatedAt||0)-(a.updatedAt||0); })
+    .map(function(a){
+      var isSel = sel && sel.id === a.id;
+      return (
+        '<div class="addr-item" style="'+(isSel?'border:1px solid #e4393c':'border:1px solid #f2f2f2')+'">' +
+          '<div class="meta">' +
+            '<div><b>'+a.name+'</b> <span class="muted">'+maskPhone(a.phone)+'</span></div>' +
+            (a.isDefault ? '<span class="pill on">默认</span>' : '<span class="pill"> </span>') +
+          '</div>' +
+          '<div class="muted" style="font-size:12px;margin-top:6px">'+a.province+a.city+(a.district||'')+a.detail+'</div>' +
+          '<div class="actions">' +
+            '<button class="btn btn-outline" data-select="'+a.id+'">选择</button>' +
+            (a.isDefault ? '' : '<button class="btn btn-outline" data-default="'+a.id+'">设为默认</button>') +
+            '<button class="btn btn-outline" data-edit="'+a.id+'">编辑</button>' +
+            '<button class="btn btn-danger" data-del="'+a.id+'">删除</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+}
+
+addrAddBtn && addrAddBtn.addEventListener('click', function(){
+  clearAddressForm();
+  show('address-edit');
+});
+document.getElementById('address-form') && document.getElementById('address-form').addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  saveAddress();
+});
+addrListEl && addrListEl.addEventListener('click', function(e){
+  var t = e.target;
+  if (!t || !t.dataset) return;
+  if (t.dataset.select) {
+    app.selectedAddressId = t.dataset.select;
+    saveSelectedAddress();
+    renderAddressList();
+    renderConfirm();
+    return;
+  }
+  if (t.dataset.default) return setDefaultAddress(t.dataset.default);
+  if (t.dataset.edit) {
+    var a = app.addresses.find(function(x){return x.id===t.dataset.edit;});
+    if (!a) return;
+    fillAddressForm(a);
+    show('address-edit');
+    return;
+  }
+  if (t.dataset.del) {
+    var id = t.dataset.del;
+    var a2 = app.addresses.find(function(x){return x.id===id;});
+    if (!a2) return;
+    showConfirm({
+      title: '删除地址',
+      message: '确定删除该收货地址？删除后不可恢复。',
+      okText: '删除',
+      danger: true,
+      onConfirm: function () {
+        app.addresses = app.addresses.filter(function (x) { return x.id !== id; });
+        if (a2.isDefault) {
+          if (app.addresses.length) {
+            var next = app.addresses.slice().sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); })[0];
+            next.isDefault = true;
+            app.selectedAddressId = next.id;
+          } else {
+            app.selectedAddressId = null;
+          }
+        } else if (app.selectedAddressId === id) {
+          var def = getDefaultAddress();
+          app.selectedAddressId = def ? def.id : null;
+        }
+        saveAddresses();
+        saveSelectedAddress();
+        renderAddressList();
+        renderConfirm();
+        showToast('地址已删除', 'success');
+      }
+    });
+    return;
+  }
+});
+
 function saveAddress() {
+  clearAddressFieldErrors();
   var name = (document.getElementById('addr-name') || {}).value || '';
   var phone = (document.getElementById('addr-phone') || {}).value || '';
   var province = (document.getElementById('addr-province') || {}).value || '';
   var city = (document.getElementById('addr-city') || {}).value || '';
+  var district = (document.getElementById('addr-district') || {}).value || '';
   var detail = (document.getElementById('addr-detail') || {}).value || '';
+  var isDefault = !!((document.getElementById('addr-default') || {}).checked);
 
-  if (!name.trim()) return alert('请填写收货人');
-  if (!phone.trim()) return alert('请填写手机号');
-  if (!province.trim() || !city.trim()) return alert('请选择省市');
-  if (!detail.trim()) return alert('请填写详细地址');
+  var ok = true;
+  if (!name.trim()) {
+    setAddressFieldError('name', '请填写收货人');
+    ok = false;
+  }
+  if (!phone.trim()) {
+    setAddressFieldError('phone', '请填写手机号');
+    ok = false;
+  } else if (!/^1\d{10}$/.test(phone.trim())) {
+    setAddressFieldError('phone', '请输入 11 位有效手机号');
+    ok = false;
+  }
+  if (!province.trim()) {
+    setAddressFieldError('province', '请选择省份');
+    ok = false;
+  }
+  if (!city.trim()) {
+    setAddressFieldError('city', '请选择城市');
+    ok = false;
+  }
+  if (!district.trim()) {
+    setAddressFieldError('district', '请选择区/县');
+    ok = false;
+  }
+  if (!detail.trim()) {
+    setAddressFieldError('detail', '请填写详细地址');
+    ok = false;
+  }
+  if (!ok) {
+    showToast('请完善表单中标红项', 'error');
+    return;
+  }
 
-  alert('地址已保存（演示）');
-  goBack();
+  var id = editingAddressId || ('a' + Date.now());
+  var existed = app.addresses.find(function(a){return a.id===id;});
+  if (existed) {
+    existed.name = name.trim();
+    existed.phone = phone.trim();
+    existed.province = province.trim();
+    existed.city = city.trim();
+    existed.district = district.trim();
+    existed.detail = detail.trim();
+    existed.updatedAt = Date.now();
+    if (isDefault) setDefaultAddress(id);
+  } else {
+    var newAddr = { id:id, name:name.trim(), phone:phone.trim(), province:province.trim(), city:city.trim(), district:district.trim(), detail:detail.trim(), isDefault:false, updatedAt:Date.now() };
+    app.addresses.unshift(newAddr);
+    if (isDefault || !getDefaultAddress()) setDefaultAddress(id);
+    app.selectedAddressId = id;
+    saveSelectedAddress();
+  }
+  saveAddresses();
+  renderAddressList();
+  renderConfirm();
+  showToast('地址已保存', 'success');
+  show('address');
 }
 
-document.getElementById('banner').addEventListener('click', function() {
-  if (confirm('是否切换到管理后台？')) showAdmin();
+// ====== 订单：状态 Tab / 详情 / 操作 ======
+function orderStatusText(s){
+  return {PENDING_PAY:'待付款',PENDING_SHIP:'待发货',SHIPPED:'待收货',FINISHED:'已完成',CANCELED:'已取消'}[s] || s;
+}
+function genOrderNo(){ return ''+Date.now(); }
+function findOrder(id){ return app.orders.find(function(o){return o.id===id;}); }
+
+function createOrderFromCart() {
+  var addr = getSelectedAddress();
+  if (!addr) {
+    showToast('请先新增收货地址', 'error');
+    show('address');
+    return null;
+  }
+  var items = cartList().filter(function (x) { return x.checked; }).map(function (x) {
+    var nm = x.product.name + (x.subLabel ? ' · ' + x.subLabel : '');
+    return { productId: x.pid, skuId: x.skuId, name: nm, price: x.unitPrice, qty: x.qty };
+  });
+  if (!items.length) {
+    showToast('请先勾选要结算的商品', 'error');
+    return null;
+  }
+  var total = items.reduce(function(s,it){return s+it.price*it.qty;},0);
+  var o = {
+    id:'o'+Date.now(),
+    no: genOrderNo(),
+    status:'PENDING_PAY',
+    items: items,
+    total: total,
+    addressSnapshot: { name: addr.name, phone: addr.phone, full: (addr.province || '') + (addr.city || '') + (addr.district || '') + (addr.detail || '') },
+    createdAt: Date.now()
+  };
+  app.orders.unshift(o);
+  saveOrders();
+  // 演示：从购物车移除已结算项
+  items.forEach(function(it){ delete app.cart[it.productId]; });
+  saveCart();
+  renderCart();
+  return o;
+}
+
+function renderConfirm() {
+  var addrText = document.getElementById('confirm-address-text');
+  var addr = getSelectedAddress();
+  if (addrText) {
+    if (!addr) addrText.textContent = '请选择收货地址';
+    else addrText.innerHTML = '<b>'+addr.name+'</b> '+maskPhone(addr.phone)+'<div class="muted" style="font-size:12px;margin-top:4px">'+(addr.province||'')+(addr.city||'')+(addr.district||'')+(addr.detail||'')+'</div>';
+  }
+  var itemsEl = document.getElementById('confirm-items');
+  var totalEl = document.getElementById('confirm-total');
+  var items = cartList().filter(function(x){return x.checked;});
+  if (itemsEl) {
+    itemsEl.innerHTML = items.length ? items.map(function(x){
+      return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5"><div>'+x.product.name+(x.subLabel?' · '+x.subLabel:'')+' ×'+x.qty+'</div><div style="font-weight:700">'+formatPrice(x.unitPrice*x.qty)+'</div></div>';
+    }).join('') : '<div class="empty">未选择商品</div>';
+  }
+  if (totalEl) totalEl.textContent = formatPrice(calcCartTotal());
+}
+
+document.getElementById('confirm-address') && document.getElementById('confirm-address').addEventListener('click', function(){
+  show('address');
+});
+document.getElementById('confirm-submit') && document.getElementById('confirm-submit').addEventListener('click', function(){
+  var o = createOrderFromCart();
+  if (!o) return;
+  renderOrderDetail(o.id);
+  show('order-detail');
 });
 
+function cancelOrder(id){
+  var o = findOrder(id); if (!o) return;
+  if (o.status !== 'PENDING_PAY') return showToast('当前状态不可取消', 'error');
+  showConfirm({
+    title: '取消订单',
+    message: '确认取消该订单？',
+    okText: '取消订单',
+    danger: true,
+    onConfirm: function () {
+      o.status = 'CANCELED'; o.canceledAt = Date.now();
+      saveOrders(); renderOrderList(); renderOrderDetail(id);
+      showToast('订单已取消', 'success');
+    }
+  });
+}
+function payOrder(id){
+  var o = findOrder(id); if (!o) return;
+  if (o.status !== 'PENDING_PAY') return showToast('无需支付', 'error');
+  showConfirm({
+    title: '确认支付',
+    message: '演示环境：确认后将模拟支付成功，订单进入「待发货」。',
+    okText: '确认支付',
+    onConfirm: function () {
+      o.status = 'PENDING_SHIP'; o.paidAt = Date.now();
+      saveOrders(); renderOrderList(); renderOrderDetail(id);
+      showToast('支付成功', 'success');
+    }
+  });
+}
+function shipOrder(id){
+  var o = findOrder(id); if (!o) return;
+  if (o.status !== 'PENDING_SHIP') return showToast('当前状态不可发货', 'error');
+  o.status = 'SHIPPED'; o.shippedAt = Date.now();
+  saveOrders(); renderOrderList(); renderOrderDetail(id);
+  showToast('已发货', 'success');
+}
+function receiveOrder(id){
+  var o = findOrder(id); if (!o) return;
+  if (o.status !== 'SHIPPED') return showToast('当前状态不可确认收货', 'error');
+  showConfirm({
+    title: '确认收货',
+    message: '确认已收到全部商品？',
+    onConfirm: function () {
+      o.status = 'FINISHED'; o.finishedAt = Date.now();
+      saveOrders(); renderOrderList(); renderOrderDetail(id);
+      showToast('已确认收货', 'success');
+    }
+  });
+}
+
+function renderOrderList() {
+  var root = document.getElementById('order-list');
+  if (!root) return;
+  var list = app.orders.slice();
+  if (app.orderFilter !== 'ALL') list = list.filter(function(o){return o.status===app.orderFilter;});
+  if (!list.length) { root.innerHTML = '<div class="empty">暂无订单</div>'; return; }
+  root.innerHTML = list.map(function(o){
+    return (
+      '<div class="order-card" data-oid="'+o.id+'">' +
+        '<div class="top"><div>订单号：'+o.no+'</div><div class="status">'+orderStatusText(o.status)+'</div></div>' +
+        '<div class="muted" style="font-size:12px;margin-top:6px">'+(o.items[0]?o.items[0].name:'')+' 等'+o.items.length+'件 · '+formatPrice(o.total)+'</div>' +
+        '<div class="actions">' +
+          (o.status==='PENDING_PAY' ? '<button class="btn btn-outline" data-cancel="'+o.id+'">取消</button><button class="btn" data-pay="'+o.id+'">去支付</button>' : '') +
+          (o.status==='PENDING_SHIP' ? '<button class="btn btn-outline" data-ship="'+o.id+'">模拟发货</button>' : '') +
+          (o.status==='SHIPPED' ? '<button class="btn btn-outline" data-logistics="'+o.id+'">查看物流</button><button class="btn btn-success" data-receive="'+o.id+'">确认收货</button>' : '') +
+          '<button class="btn btn-outline" data-detail="'+o.id+'">详情</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+var orderTabs = document.getElementById('order-tabs');
+orderTabs && orderTabs.addEventListener('click', function(e){
+  var t = e.target && e.target.closest ? e.target.closest('.order-tab2') : null;
+  if (!t) return;
+  app.orderFilter = t.dataset.status;
+  orderTabs.querySelectorAll('.order-tab2').forEach(function(x){x.classList.remove('active');});
+  t.classList.add('active');
+  renderOrderList();
+});
+
+document.getElementById('order-list') && document.getElementById('order-list').addEventListener('click', function(e){
+  var t = e.target;
+  if (!t || !t.dataset) return;
+  if (t.dataset.cancel) return cancelOrder(t.dataset.cancel);
+  if (t.dataset.pay) return payOrder(t.dataset.pay);
+  if (t.dataset.ship) return shipOrder(t.dataset.ship);
+  if (t.dataset.receive) return receiveOrder(t.dataset.receive);
+  if (t.dataset.logistics) return showLogisticsDemo();
+  if (t.dataset.detail) { renderOrderDetail(t.dataset.detail); show('order-detail'); }
+});
+
+function renderOrderDetail(id) {
+  var o = findOrder(id); if (!o) return;
+  app.currentOrderId = id;
+  var no = document.getElementById('od-no'); if (no) no.textContent = '订单号：' + o.no;
+  var time = document.getElementById('od-time'); if (time) time.textContent = '下单时间：' + new Date(o.createdAt).toLocaleString();
+  var st = document.getElementById('od-status'); if (st) st.textContent = '状态：' + orderStatusText(o.status);
+  var addr = document.getElementById('od-address');
+  if (addr) addr.innerHTML = '<b>'+o.addressSnapshot.name+'</b> '+maskPhone(o.addressSnapshot.phone)+'<div class="muted" style="font-size:12px;margin-top:4px">'+o.addressSnapshot.full+'</div>';
+  var items = document.getElementById('od-items');
+  if (items) items.innerHTML = o.items.map(function(it){
+    return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5"><div>'+it.name+' ×'+it.qty+'</div><div style="font-weight:700">'+formatPrice(it.price*it.qty)+'</div></div>';
+  }).join('') + '<div style="text-align:right;margin-top:8px;font-weight:800">合计：<span style="color:#e4393c">'+formatPrice(o.total)+'</span></div>';
+  var act = document.getElementById('od-actions');
+  if (act) {
+    var html = '';
+    if (o.status==='PENDING_PAY') html = '<button class="btn btn-outline" onclick="cancelOrder(\''+o.id+'\')">取消</button><button class="btn" onclick="payOrder(\''+o.id+'\')">去支付</button>';
+    else if (o.status==='PENDING_SHIP') html = '<button class="btn btn-outline" onclick="shipOrder(\''+o.id+'\')">模拟发货</button>';
+    else if (o.status==='SHIPPED') html = '<button class="btn btn-outline" onclick="showLogisticsDemo()">查看物流</button><button class="btn btn-success" onclick="receiveOrder(\''+o.id+'\')">确认收货</button>';
+    else html = '<button class="btn btn-outline" onclick="show(\'orders\')">返回列表</button>';
+    act.innerHTML = html;
+  }
+}
+
+// Banner 不再占用“点击切后台”，避免与 PRD“点击跳转”冲突
+// 管理后台入口：页面右上角「后台」按钮或控制台 showAdmin()
+
+document.getElementById('product-add-sku') && document.getElementById('product-add-sku').addEventListener('click', function () {
+  adminSkuAppendRow({ id: '', label: '新规格', price: 0, stock: 0, alert: 10 });
+});
+document.getElementById('product-modal') && document.getElementById('product-modal').addEventListener('click', function (e) {
+  if (!e.target.classList.contains('sku-del')) return;
+  var tr = e.target.closest('tr');
+  var tb = document.getElementById('product-modal-sku-body');
+  if (!tr || !tb) return;
+  if (tb.querySelectorAll('tr').length <= 1) return showToast('至少保留一个 SKU', 'error');
+  tr.remove();
+});
+document.getElementById('product-cover') && document.getElementById('product-cover').addEventListener('input', adminUpdateCoverPreview);
+
+// 初始化
+bindProtoUiOnce();
+syncRegionUI();
+renderHotAndHistory();
+renderHome();
+renderCategory();
+renderCart();
+renderAddressList();
+renderConfirm();
+renderOrderList();
 render('home');
 </script>
 </body>
