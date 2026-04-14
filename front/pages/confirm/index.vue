@@ -66,6 +66,7 @@ import { useAddressStore } from '@/store/address';
 import { useRegionStore } from '@/store/region';
 import { useOrderStore } from '@/store/order';
 import { createPay } from '@/api/pay';
+import { pollPayStatus } from '@/utils/pay';
 
 const cartStore = useCartStore();
 const addressStore = useAddressStore();
@@ -160,11 +161,17 @@ async function onSubmit() {
       });
     });
     
-    // 支付成功
-    uni.showToast({ title: '支付成功', icon: 'success' });
+    uni.showLoading({ title: '支付结果确认中...' });
+    const result = await pollPayStatus(order.id);
+    uni.hideLoading();
+    if (result.ok) {
+      uni.showToast({ title: '支付成功', icon: 'success' });
+    } else {
+      uni.showToast({ title: '支付确认中，请在订单里查看', icon: 'none' });
+    }
     setTimeout(() => {
       uni.navigateTo({ url: `/pages/order-detail/index?id=${order.id}` });
-    }, 1500);
+    }, 800);
     
   } catch (e) {
     console.error('提交订单失败', e);
@@ -175,6 +182,7 @@ async function onSubmit() {
       uni.showToast({ title: e.message || '提交失败', icon: 'none' });
     }
   } finally {
+    uni.hideLoading();
     submitting.value = false;
   }
 }

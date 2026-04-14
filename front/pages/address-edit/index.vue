@@ -15,30 +15,20 @@
         <text v-if="errors.phone" class="error-msg">{{ errors.phone }}</text>
       </view>
       
-      <!-- 省份 -->
+      <!-- 省市区（上线：改为真实可填，避免 demo 写死） -->
       <view class="form-group" :class="{ error: errors.province }">
         <text class="label">省份</text>
-        <picker :value="provinceIndex" :range="provinces" @change="onProvinceChange">
-          <view class="picker-value">{{ form.province || '请选择省份' }}</view>
-        </picker>
+        <input v-model="form.province" class="input" placeholder="例如：广东省" />
         <text v-if="errors.province" class="error-msg">{{ errors.province }}</text>
       </view>
-      
-      <!-- 城市 -->
       <view class="form-group" :class="{ error: errors.city }">
         <text class="label">城市</text>
-        <picker :value="cityIndex" :range="cities" @change="onCityChange">
-          <view class="picker-value">{{ form.city || '请选择城市' }}</view>
-        </picker>
+        <input v-model="form.city" class="input" placeholder="例如：深圳市" />
         <text v-if="errors.city" class="error-msg">{{ errors.city }}</text>
       </view>
-      
-      <!-- 区/县 -->
       <view class="form-group" :class="{ error: errors.district }">
         <text class="label">区/县</text>
-        <picker :value="districtIndex" :range="districts" @change="onDistrictChange">
-          <view class="picker-value">{{ form.district || '请选择区/县' }}</view>
-        </picker>
+        <input v-model="form.district" class="input" placeholder="例如：南山区" />
         <text v-if="errors.district" class="error-msg">{{ errors.district }}</text>
       </view>
       
@@ -84,13 +74,7 @@ const submitting = ref(false);
 const isEdit = ref(false);
 const editId = ref('');
 
-const provinces = ['北京市', '上海市', '广东省', '江苏省', '浙江省', '四川省', '湖北省', '湖南省'];
-const cities = ['市辖区', '市辖区', '广州市', '深圳市', '南京市', '杭州市', '成都市', '武汉市', '长沙市'];
-const districts = ['东城区', '西城区', '朝阳区', '海淀区', '浦东新区', '黄浦区'];
-
-const provinceIndex = ref(0);
-const cityIndex = ref(0);
-const districtIndex = ref(0);
+// 上线：省市区改为真实可输入（避免 demo 写死导致无法填写真实地址）
 
 onMounted(() => {
   const pages = getCurrentPages();
@@ -113,20 +97,7 @@ onMounted(() => {
   }
 });
 
-function onProvinceChange(e) {
-  provinceIndex.value = e.detail.value;
-  form.value.province = provinces[e.detail.value];
-}
-
-function onCityChange(e) {
-  cityIndex.value = e.detail.value;
-  form.value.city = cities[e.detail.value];
-}
-
-function onDistrictChange(e) {
-  districtIndex.value = e.detail.value;
-  form.value.district = districts[e.detail.value];
-}
+// 省市区改为输入框，无需 picker change
 
 function validate() {
   errors.value = {};

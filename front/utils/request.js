@@ -1,12 +1,13 @@
 // 请求封装
-const BASE_URL = 'http://localhost:8080/api/v1';
+import { getApiBaseURL } from './env';
 
 const request = (options) => {
   return new Promise((resolve, reject) => {
     const token = uni.getStorageSync('token');
+    const baseURL = getApiBaseURL();
     
     uni.request({
-      url: BASE_URL + options.url,
+      url: baseURL + options.url,
       method: options.method || 'GET',
       header: {
         'Authorization': token ? `Bearer ${token}` : '',

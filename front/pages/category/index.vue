@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onShow, computed } from 'vue';
 import { useCategoryStore } from '@/store/category';
 import { useRegionStore } from '@/store/region';
 import { getProducts } from '@/api/goods';
@@ -53,10 +53,19 @@ const loading = ref(false);
 
 const categoryList = computed(() => categoryStore.categories);
 
-import { computed } from 'vue';
-
 onMounted(async () => {
+  await categoryStore.fetchCategories();
+  // 默认选中：store 指定分类 > 第一个分类
+  currentCategory.value = categoryStore.currentCategory || (categoryStore.categories[0]?.id ?? '');
   await loadProducts();
+});
+
+onShow(async () => {
+  // 支持从首页 Banner 跳转后自动选中分类
+  if (categoryStore.currentCategory && categoryStore.currentCategory !== currentCategory.value) {
+    currentCategory.value = categoryStore.currentCategory;
+    await loadProducts();
+  }
 });
 
 async function loadProducts() {
@@ -78,6 +87,7 @@ async function loadProducts() {
 
 function onCategoryChange(catId) {
   currentCategory.value = catId;
+  categoryStore.setCategory(catId);
   loadProducts();
 }
 

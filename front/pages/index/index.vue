@@ -93,12 +93,9 @@
       </view>
     </view>
     
-    <!-- 加载更多 -->
-    <view v-if="hasMore" class="load-more" @click="loadMore">
-      <text>加载更多</text>
-    </view>
-    <view v-else class="no-more">
-      <text>没有更多了</text>
+    <!-- 首页列表按服务端 N 截取，不做分页加载更多 -->
+    <view class="no-more">
+      <text>更多商品请到「分类」或「搜索」查看</text>
     </view>
     
     <!-- 区域选择弹窗 -->
@@ -140,8 +137,6 @@ const banners = ref([]);
 const featured = ref(null);
 const products = ref([]);
 const currentCategory = ref('');
-const page = ref(1);
-const hasMore = ref(true);
 const showRegionPicker = ref(false);
 const pendingRegion = ref('');
 
@@ -168,7 +163,6 @@ async function loadHomeData() {
     banners.value = bannerData.banners || [];
     featured.value = featuredData || null;
     products.value = productsData.list || productsData || [];
-    hasMore.value = (productsData.list || productsData || []).length >= 24;
   } catch (e) {
     console.error('加载首页数据失败', e);
     uni.showToast({ title: '加载失败', icon: 'none' });
@@ -177,7 +171,6 @@ async function loadHomeData() {
 
 async function onCategoryChange(catId) {
   currentCategory.value = catId;
-  page.value = 1;
   await loadHomeData();
 }
 
@@ -188,7 +181,6 @@ function selectRegion(code) {
 async function confirmRegion() {
   regionStore.setRegion(pendingRegion.value);
   showRegionPicker = false;
-  page.value = 1;
   await loadHomeData();
 }
 
@@ -200,6 +192,7 @@ function onBannerClick(banner) {
   } else if (type === 'search' && keyword) {
     uni.navigateTo({ url: `/pages/search/result?keyword=${keyword}` });
   } else if (type === 'category' && category_id) {
+  categoryStore.setCategory(category_id);
     uni.switchTab({ url: '/pages/category/index' });
   }
 }
@@ -233,20 +226,7 @@ async function addToCart(goods) {
   }
 }
 
-async function loadMore() {
-  page.value++;
-  try {
-    const regionCode = regionStore.currentRegion;
-    const categoryId = currentCategory.value;
-    const data = await getHomeProducts(regionCode, categoryId);
-    const newProducts = data.list || data || [];
-    products.value = [...products.value, ...newProducts];
-    hasMore.value = newProducts.length >= 24;
-  } catch (e) {
-    page.value--;
-    uni.showToast({ title: '加载失败', icon: 'none' });
-  }
-}
+// 首页列表由服务端按 N 截取，前端不做分页追加，避免重复数据/规则不一致
 </script>
 
 <style lang="scss" scoped>

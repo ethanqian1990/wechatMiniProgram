@@ -116,12 +116,18 @@ async function goPay(order) {
         fail: reject
       });
     });
+    uni.showLoading({ title: '支付结果确认中...' });
+    const { pollPayStatus } = require('@/utils/pay');
+    await pollPayStatus(order.id);
+    uni.hideLoading();
     uni.showToast({ title: '支付成功', icon: 'success' });
     loadOrders();
   } catch (e) {
     if (!e.errMsg?.includes('cancel')) {
       uni.showToast({ title: '支付失败', icon: 'none' });
     }
+  } finally {
+    uni.hideLoading();
   }
 }
 

@@ -1,0 +1,11 @@
+{
+  "name": "wechat-mall-miniapp",
+  "private": true,
+  "version": "0.1.0",
+  "description": "UniApp (Vue3) 微信购物商城小程序前端",
+  "scripts": {
+    "dev": "echo \"请使用 HBuilderX 运行 front/ 到微信开发者工具\"",
+    "build": "echo \"请使用 HBuilderX 发行 front/ (小程序-微信)\""
+  }
+}
+

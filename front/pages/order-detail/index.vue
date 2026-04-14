@@ -87,7 +87,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useOrderStore } from '@/store/order';
-import { createPay } from '@/api/pay';
+import { continuePay } from '@/api/order';
+import { pollPayStatus } from '@/utils/pay';
 
 const orderStore = useOrderStore();
 const order = ref({});
@@ -123,7 +124,7 @@ onMounted(async () => {
 
 async function onPay() {
   try {
-    const payParams = await createPay(order.value.id);
+    const payParams = await continuePay(order.value.id);
     await new Promise((resolve, reject) => {
       uni.requestPayment({
         provider: 'wxpay',
@@ -132,12 +133,17 @@ async function onPay() {
         fail: reject
       });
     });
+    uni.showLoading({ title: '支付结果确认中...' });
+    await pollPayStatus(order.value.id);
+    uni.hideLoading();
     uni.showToast({ title: '支付成功', icon: 'success' });
     order.value = await orderStore.fetchOrder(order.value.id);
   } catch (e) {
     if (!e.errMsg?.includes('cancel')) {
       uni.showToast({ title: '支付失败', icon: 'none' });
     }
+  } finally {
+    uni.hideLoading();
   }
 }
 

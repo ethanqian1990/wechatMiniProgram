@@ -9,7 +9,7 @@
       
       <view v-else>
         <view v-for="item in cartStore.items" :key="item.id" class="cart-item">
-          <checkbox :checked="item.checked" @click="cartStore.toggleItem(item.id)" />
+          <checkbox :checked="item.checked" @change="() => cartStore.toggleItem(item.id)" />
           <image class="item-img" :src="item.product?.main_image || item.sku?.image" mode="aspectFill" />
           <view class="item-info">
             <text class="item-name">{{ item.product?.name || item.sku?.name }}</text>
@@ -31,7 +31,7 @@
     <!-- 底部结算栏 -->
     <view v-if="cartStore.items.length" class="cart-footer">
       <view class="footer-left">
-        <checkbox :checked="cartStore.allChecked" @click="cartStore.toggleAll(!cartStore.allChecked)" />
+        <checkbox :checked="cartStore.allChecked" @change="() => cartStore.toggleAll(!cartStore.allChecked)" />
         <text>全选</text>
       </view>
       <view class="footer-total">
