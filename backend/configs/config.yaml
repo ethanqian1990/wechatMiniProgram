@@ -1,0 +1,38 @@
+server:
+  port: 8080
+  mode: debug
+
+database:
+  host: localhost
+  port: 3306
+  user: root
+  password: root
+  name: wechat_mall
+  max_open_conns: 100
+  max_idle_conns: 10
+
+redis:
+  host: localhost
+  port: 6379
+  password: 
+  db: 0
+
+wechat:
+  app_id: your_app_id
+  app_secret: your_app_secret
+  mch_id: your_mch_id
+  mch_key: your_mch_key
+  notify_url: https://yourdomain.com/api/v1/pay/callback
+
+jwt:
+  secret: your_jwt_secret_key_change_in_production
+  expire: 168h
+
+order:
+  auto_cancel_minutes: 15
+  auto_receive_days: 7
+
+home:
+  default_list_size: 24
+  min_list_size: 9
+  max_list_size: 99
