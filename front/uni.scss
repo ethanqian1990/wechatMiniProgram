@@ -1,0 +1,43 @@
+/* 全局样式变量 - 与设计规范对齐 */
+
+/* 颜色体系 */
+$color-primary: #E4393C;        // 活力红 - 主色
+$color-primary-light: #FF6B6B; // 珊瑚红 - 渐变
+$color-dark: #111111;          // 深空灰 - 标题
+$color-text: #333333;          // 炭黑 - 正文
+$color-secondary: #666666;      // 中灰 - 副标题
+$color-muted: #999999;         // 浅灰 - 提示
+$color-border: #EEEEEE;        // 边框灰
+$color-bg: #F5F5F5;            // 背景灰
+$color-white: #FFFFFF;         // 白色
+$color-success: #11998E;       // 翠绿 - 成功
+$color-warning: #F2994A;       // 橙色 - 警告
+$color-disabled: #CCCCCC;       // 灰色 - 失效
+
+/* 间距体系 */
+$spacing-xs: 4rpx;
+$spacing-sm: 8rpx;
+$spacing-md: 12rpx;
+$spacing-lg: 16rpx;
+$spacing-xl: 20rpx;
+$spacing-xxl: 24rpx;
+
+/* 圆角体系 */
+$radius-sm: 4rpx;
+$radius-md: 8rpx;
+$radius-lg: 12rpx;
+$radius-xl: 14rpx;
+$radius-full: 9999rpx;
+
+/* 字体大小 */
+$font-xs: 11px;
+$font-sm: 12px;
+$font-md: 13px;
+$font-lg: 14px;
+$font-xl: 16px;
+$font-xxl: 17px;
+
+/* 阴影 */
+$shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+$shadow-md: 0 2px 12px rgba(0,0,0,0.06);
+$shadow-lg: 0 4px 14px rgba(0,0,0,0.08);
