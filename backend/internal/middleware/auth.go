@@ -1,17 +1,17 @@
 package middleware
 
 import (
-	github.com/gin-gonic/gin
-	github.com/golang-jwt/jwt/v5
-	github.com/ethanqian1990/wechat-mall-backend/pkg/response
-	time      time   time
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/ethanqian1990/wechat-mall-backend/pkg/response"
+	"time"
 )
 
-var JWTSecret = []byte(your_jwt_secret)
+var JWTSecret = []byte("your_jwt_secret")
 
 type Claims struct {
-	UserID string `json: user_id`
-	Role   string `json: role`
+	UserID string `json:"user_id"`
+	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -43,32 +43,32 @@ func ParseToken(tokenString string) (*Claims, error) {
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader(Authorization)
-		if authHeader ==  {
-			response.Error(c, 401, 未登录)
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			response.Error(c, 401, "未登录")
 			c.Abort()
 			return
 		}
 
-		tokenString := authHeader[len(Bearer ):]
+		tokenString := authHeader[len("Bearer "):]
 		claims, err := ParseToken(tokenString)
 		if err != nil {
-			response.Error(c, 401, Token失效)
+			response.Error(c, 401, "Token失效")
 			c.Abort()
 			return
 		}
 
-		c.Set(userID, claims.UserID)
-		c.Set(role, claims.Role)
+		c.Set("user_id", claims.UserID)
+		c.Set("role", claims.Role)
 		c.Next()
 	}
 }
 
 func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role, exists := c.Get(role)
-		if !exists || role != admin {
-			response.Error(c, 403, 无权限)
+		role, exists := c.Get("role")
+		if !exists || role != "admin" {
+			response.Error(c, 403, "无权限")
 			c.Abort()
 			return
 		}

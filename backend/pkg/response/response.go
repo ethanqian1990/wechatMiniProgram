@@ -1,26 +1,26 @@
 package response
 
 import (
-	github.com/gin-gonic/gin
+	"github.com/gin-gonic/gin"
 )
 
 type Response struct {
-	Code    int         `json: code`
-	Message string      `json: message`
-	Data    interface{} `json: data`
-	Error   string      `json: error,omitempty`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+	Error   string      `json:"error,omitempty"`
 }
 
 func Success(c *gin.Context, data interface{}) {
 	c.JSON(200, Response{
 		Code:    200,
-		Message: success,
+		Message: "success",
 		Data:    data,
 	})
 }
 
 func Error(c *gin.Context, code int, message string, errMsg ...string) {
-	err := 
+	err := ""
 	if len(errMsg) > 0 {
 		err = errMsg[0]
 	}
@@ -33,9 +33,9 @@ func Error(c *gin.Context, code int, message string, errMsg ...string) {
 
 func Paginate(c *gin.Context, list interface{}, total int, page int, pageSize int) {
 	Success(c, gin.H{
-		list:     list,
-		total:    total,
-		page:     page,
-		pageSize: pageSize,
+		"list":      list,
+		"total":     total,
+		"page":      page,
+		"pageSize": pageSize,
 	})
 }
