@@ -249,7 +249,7 @@ func (h *AdminOrderHandler) UpdatePrice(c *gin.Context) {
 		return
 	}
 
-	err := h.orderRepo.Update(id, map[string]interface{}{
+	err := h.orderRepo.UpdateOrder(id, map[string]interface{}{
 		"final_amount": req.FinalAmount,
 	})
 	if err != nil {

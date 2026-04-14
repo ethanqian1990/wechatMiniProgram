@@ -322,9 +322,6 @@ func (r *OrderRepository) UpdateStatus(id, status string) error {
 	return DB.Model(&model.Order{}).Where("id = ?", id).Update("status", status).Error
 }
 
-func (r *OrderRepository) Update(id string, updates map[string]interface{}) error {
-	return DB.Model(&model.Order{}).Where("id = ?", id).Updates(updates).Error
-}
 
 type OrderItemRepository struct{}
 
@@ -491,4 +488,34 @@ func NewStockReservationRepository() *StockReservationRepository {
 func (r *SKURepository) ReleaseStock(skuID string, quantity int) error {
 	return DB.Model(&model.ProductSKU{}).Where("id = ?", skuID).
 		Update("stock", gorm.Expr("stock + ?", quantity)).Error
+}
+
+// FindByOrderNo 根据订单号查找
+
+// FindByIDAndUserID 根据ID和用户ID查找
+func (r *OrderRepository) FindByIDAndUserID(id, userID string) (*model.Order, error) {
+	var order model.Order
+	err := DB.First(&order, "id = ? AND user_id = ?", id, userID).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &order, err
+}
+
+// Update 更新订单
+
+// ConfirmByOrderID 确认库存冻结
+func (r *StockReservationRepository) ConfirmByOrderID(orderID string) error {
+	return DB.Model(&model.StockReservation{}).Where("order_id = ? AND status = ?", orderID, "FROZEN").
+		Update("status", "CONFIRMED").Error
+}
+
+func (r *OrderRepository) FindByOrderNo(orderNo string) ([]model.Order, error) {
+	var orders []model.Order
+	err := DB.Where("order_no = ?", orderNo).Find(&orders).Error
+	return orders, err
+}
+
+func (r *OrderRepository) UpdateOrder(id string, updates map[string]interface{}) error {
+	return DB.Model(&model.Order{}).Where("id = ?", id).Updates(updates).Error
 }
