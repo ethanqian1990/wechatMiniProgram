@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商城管理后台</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F5F5F5; font-size: 13px; color: #333; }
+
+.admin-layout { display: flex; min-height: 100vh; }
+.sidebar { width: 200px; background: #1A1A2E; color: #fff; position: fixed; top: 0; left: 0; bottom: 0; }
+.sidebar-title { padding: 20px 18px; font-size: 16px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-menu { padding: 10px 0; }
+.menu-item { padding: 12px 18px; cursor: pointer; color: rgba(255,255,255,0.85); transition: all 0.2s; }
+.menu-item:hover, .menu-item.active { background: #16213E; color: #fff; }
+.menu-item.active { border-left: 3px solid #E4393C; }
+
+.main-content { margin-left: 200px; flex: 1; display: flex; flex-direction: column; }
+.header { height: 56px; background: #fff; border-bottom: 1px solid #EEE; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+.header-title { font-weight: 600; font-size: 15px; }
+.header-actions { display: flex; gap: 12px; }
+
+.content { padding: 20px; flex: 1; overflow: auto; }
+
+.card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { border-radius: 12px; padding: 20px; color: #fff; }
+.stat-card.purple { background: linear-gradient(135deg, #667EEA, #764BA2); }
+.stat-card.green { background: linear-gradient(135deg, #11998E, #38EF7D); }
+.stat-card.red { background: linear-gradient(135deg, #EB3349, #F45C43); }
+.stat-card.orange { background: linear-gradient(135deg, #F2994A, #F2C94C); }
+.stat-label { font-size: 13px; opacity: 0.9; }
+.stat-value { font-size: 28px; font-weight: 800; margin-top: 8px; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #F0F0F0; font-size: 13px; }
+.table th { background: #FAFAFA; color: #333; font-weight: 600; }
+.table tr:hover { background: #FAFAFA; }
+.table img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #EEE; }
+
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.btn-primary { background: #E4393C; color: #fff; }
+.btn-primary:hover { background: #D32F2F; }
+.btn-outline { background: #fff; color: #333; border: 1px solid #DDD; }
+.btn-outline:hover { background: #F5F5F5; }
+.btn-success { background: #11998E; color: #fff; }
+.btn-danger { background: #E4393C; color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+.tag { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; background: #F0F0F0; color: #666; }
+.tag.on { background: #FFECEB; color: #E4393C; }
+.tag.ok { background: #Eafff2; color: #11998E; }
+.tag.off { background: #F0F0F0; color: #999; }
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; color: #333; margin-bottom: 6px; }
+.form-control { width: 100%; padding: 10px 12px; border: 1px solid #DDD; border-radius: 8px; font-size: 13px; }
+.form-control:focus { outline: none; border-color: #E4393C; }
+.form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.active { display: flex; }
+.modal { width: 520px; max-width: 100%; max-height: 90vh; overflow: auto; background: #fff; border-radius: 12px; padding: 24px; }
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+
+.tabs { display: flex; gap: 12px; margin-bottom: 20px; background: #fff; padding: 12px; border-radius: 8px; }
+.tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #666; }
+.tab.active { background: #E4393C; color: #fff; }
+
+.search-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+.search-bar input { flex: 1; padding: 10px 16px; border: 1px solid #DDD; border-radius: 8px; }
+
+.empty { text-align: center; padding: 60px; color: #999; }
+</style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <div class="sidebar-title">商城管理后台</div>
+    <div class="sidebar-menu">
+      <div class="menu-item active" data-page="dashboard">数据概览</div>
+      <div class="menu-item" data-page="products">商品管理</div>
+      <div class="menu-item" data-page="categories">分类管理</div>
+      <div class="menu-item" data-page="orders">订单管理</div>
+      <div class="menu-item" data-page="users">用户管理</div>
+      <div class="menu-item" data-page="regions">区域管理</div>
+      <div class="menu-item" data-page="settings">系统设置</div>
+    </div>
+  </div>
+
+  <!-- 主内容区 -->
+  <div class="main-content">
+    <div class="header">
+      <div class="header-title" id="pageTitle">数据概览</div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="showProductModal()">+ 添加商品</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- 数据概览 -->
+      <div class="page" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card purple">
+            <div class="stat-label">今日订单</div>
+            <div class="stat-value" id="stat-orders">0</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">今日销售额</div>
+            <div class="stat-value" id="stat-sales">¥0</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">待发货</div>
+            <div class="stat-value" id="stat-pending">0</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-label">用户数</div>
+            <div class="stat-value" id="stat-users">0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">最近订单</div>
+          <table class="table">
+            <thead><tr><th>订单号</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+            <tbody id="recent-orders"><tr><td colspan="5" style="text-align:center;color:#999">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 商品管理 -->
+      <div class="page" id="page-products" style="display:none">
+        <div class="search-bar">
+          <input type="text" id="productSearch" placeholder="搜索商品名称/ID">
+          <select id="categoryFilter" style="padding: 10px 12px; border: 1px solid #DDD; border-radius: 8px;">
+            <option value="">全部分类</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadProducts()">搜索</button>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>图</th><th>ID</th><th>商品名称</th><th>分类</th><th>价格</th><th>库存</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="products-list"><tr><td colspan="8" style="text-align:center;color:#999">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 分类管理 -->
+      <div class="page" id="page-categories" style="display:none">
+        <div style="margin-bottom: 16px;">
+          <button class="btn btn-primary" onclick="showCategoryModal()">+ 新增分类</button>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>ID</th><th>分类名称</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="categories-list"><tr><td colspan="4" style="text-align:center;color:#999">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 订单管理 -->
+      <div class="page" id="page-orders" style="display:none">
+        <div class="tabs">
+          <div class="tab active" data-status="ALL">全部</div>
+          <div class="tab" data-status="PENDING_PAY">待付款</div>
+          <div class="tab" data-status="PENDING_SHIP">待发货</div>
+          <div class="tab" data-status="SHIPPED">待收货</div>
+          <div class="tab" data-status="FINISHED">已完成</div>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>订单号</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+            <tbody id="orders-list"><tr><td colspan="5" style="text-align:center;color:#999">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 用户管理 -->
+      <div class="page" id="page-users" style="display:none">
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>ID</th><th>昵称</th><th>手机号</th><th>注册时间</th><th>操作</th></tr></thead>
+            <tbody id="users-list"><tr><td colspan="5" style="text-align:center;color:#999">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 区域管理 -->
+      <div class="page" id="page-regions" style="display:none">
+        <div style="margin-bottom: 16px;">
+          <button class="btn btn-primary" onclick="showRegionModal()">+ 新增区域</button>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>编码</th><th>区域名称</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="regions-list"><tr><td colspan="4" style="text-align:center;color:#999">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 系统设置 -->
+      <div class="page" id="page-settings" style="display:none">
+        <div class="card">
+          <div class="card-title">管理员设置</div>
+          <div class="form-group">
+            <label class="form-label">管理员密码</label>
+            <input type="password" class="form-control" id="adminPassword" placeholder="请输入新密码（留空不修改）">
+          </div>
+          <button class="btn btn-primary" onclick="saveAdminSettings()">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 商品编辑弹窗 -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-title" id="productModalTitle">添加商品</div>
+    <input type="hidden" id="productId">
+    <div class="form-group">
+      <label class="form-label">商品名称 *</label>
+      <input type="text" class="form-control" id="productName" placeholder="请输入商品名称">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">价格</label>
+        <input type="number" class="form-control" id="productPrice" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">划线价</label>
+        <input type="number" class="form-control" id="productOriginalPrice" placeholder="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">库存</label>
+        <input type="number" class="form-control" id="productStock" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">低库存预警</label>
+        <input type="number" class="form-control" id="productThreshold" placeholder="10" value="10">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">主图URL</label>
+      <input type="text" class="form-control" id="productImage" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">商品描述</label>
+      <textarea class="form-control" id="productDesc" rows="3" placeholder="商品描述"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeProductModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveProduct()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 分类编辑弹窗 -->
+<div class="modal-overlay" id="categoryModal">
+  <div class="modal">
+    <div class="modal-title" id="categoryModalTitle">新增分类</div>
+    <input type="hidden" id="categoryId">
+    <div class="form-group">
+      <label class="form-label">分类名称 *</label>
+      <input type="text" class="form-control" id="categoryName" placeholder="请输入分类名称">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeCategoryModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCategory()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 区域编辑弹窗 -->
+<div class="modal-overlay" id="regionModal">
+  <div class="modal">
+    <div class="modal-title" id="regionModalTitle">新增区域</div>
+    <input type="hidden" id="regionCode">
+    <div class="form-group">
+      <label class="form-label">区域编码 *</label>
+      <input type="text" class="form-control" id="regionCodeInput" placeholder="如 EC, NC">
+    </div>
+    <div class="form-group">
+      <label class="form-label">区域名称 *</label>
+      <input type="text" class="form-control" id="regionName" placeholder="如 华东, 华北">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeRegionModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveRegion()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// API 配置 - 改为实际的服务器地址
+const API_BASE = 'http://localhost:8080/api/v1';
+const ADMIN_API = API_BASE + '/admin';
+let adminToken = localStorage.getItem('admin_token');
+
+// 工具函数
+const request = async (options) => {
+  const res = await fetch(API_BASE + options.url, {
+    method: options.method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': adminToken ? `Bearer ${adminToken}` : ''
+    },
+    body: options.data ? JSON.stringify(options.data) : undefined
+  });
+  const json = await res.json();
+  if (json.code === 200) return json.data;
+  throw json;
+};
+
+const formatTime = (t) => t ? new Date(t).toLocaleString('zh-CN') : '-';
+const fmtPrice = (n) => '¥' + Number(n || 0).toFixed(2);
+const statusText = (s) => ({PENDING_PAY:'待付款',PENDING_SHIP:'待发货',SHIPPED:'待收货',FINISHED:'已完成',CANCELED:'已取消'})[s] || s;
+
+// 登录检查
+async function checkLogin() {
+  if (!adminToken) {
+    const pwd = prompt('请输入管理员密码:');
+    if (!pwd) return;
+    try {
+      const res = await fetch(API_BASE + '/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', password: pwd })
+      });
+      const json = await res.json();
+      if (json.code === 200) {
+        adminToken = json.data.token;
+        localStorage.setItem('admin_token', adminToken);
+        loadDashboard();
+      } else {
+        alert('登录失败: ' + json.message);
+      }
+    } catch (e) {
+      alert('登录失败，请检查服务器连接');
+    }
+  }
+}
+
+// 页面导航
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const page = item.dataset.page;
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.getElementById('page-' + page).style.display = 'block';
+    document.getElementById('pageTitle').textContent = {dashboard:'数据概览',products:'商品管理',categories:'分类管理',orders:'订单管理',users:'用户管理',regions:'区域管理',settings:'系统设置'}[page];
+    loadPageData(page);
+  });
+});
+
+async function loadPageData(page) {
+  try {
+    switch (page) {
+      case 'dashboard': await loadDashboard(); break;
+      case 'products': await loadProducts(); break;
+      case 'categories': await loadCategories(); break;
+      case 'orders': await loadOrders(); break;
+      case 'users': await loadUsers(); break;
+      case 'regions': await loadRegions(); break;
+    }
+  } catch (e) { console.error(e); }
+}
+
+// 数据概览
+async function loadDashboard() {
+  try {
+    const [orders, users] = await Promise.all([
+      request({url:'/admin/orders'}).catch(()=>({list:[]})),
+      request({url:'/admin/users'}).catch(()=>({list:[]}))
+    ]);
+    const today = new Date().setHours(0,0,0,0);
+    const todayOrders = (orders.list||[]).filter(o=>new Date(o.created_at)>=today);
+    const todaySales = todayOrders.reduce((s,o)=>s+(o.final_amount||0),0);
+    document.getElementById('stat-orders').textContent = todayOrders.length;
+    document.getElementById('stat-sales').textContent = fmtPrice(todaySales);
+    document.getElementById('stat-pending').textContent = (orders.list||[]).filter(o=>o.status==='PENDING_SHIP').length;
+    document.getElementById('stat-users').textContent = (users.list||[]).length;
+    
+    const recent = (orders.list||[]).slice(0,5);
+    document.getElementById('recent-orders').innerHTML = recent.length ? recent.map(o=>`<tr><td>${o.order_no}</td><td>${fmtPrice(o.final_amount)}</td><td><span class="tag ${o.status==='PENDING_PAY'?'on':'ok'}">${statusText(o.status)}</span></td><td>${formatTime(o.created_at)}</td><td><button class="btn btn-sm btn-outline" onclick="alert('订单ID: ${o.id}')">详情</button></td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:#999">暂无订单</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+// 商品管理
+async function loadProducts() {
+  try {
+    const data = await request({url:'/admin/products'});
+    const list = data.list||data||[];
+    document.getElementById('products-list').innerHTML = list.length ? list.map(p=>`<tr><td><img src="${p.main_image||''}" onerror="this.style.display='none'"></td><td style="font-size:11px;color:#666">${p.id?.slice(0,8)}</td><td>${p.name}</td><td>${p.category_id||'-'}</td><td>${fmtPrice(p.price)}</td><td>${p.stock||0}</td><td><span class="tag ${p.is_on_shelf?'on':'off'}">${p.is_on_shelf?'上架':'下架'}</span></td><td><button class="btn btn-sm btn-outline" onclick="editProduct('${p.id}')">编辑</button></td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:#999">暂无商品</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+function showProductModal(p) {
+  document.getElementById('productModal').classList.add('active');
+  document.getElementById('productModalTitle').textContent = p?'编辑商品':'添加商品';
+  if (p) {
+    document.getElementById('productId').value = p.id;
+    document.getElementById('productName').value = p.name||'';
+    document.getElementById('productPrice').value = p.price||0;
+    document.getElementById('productOriginalPrice').value = p.original_price||'';
+    document.getElementById('productStock').value = p.stock||0;
+    document.getElementById('productImage').value = p.main_image||'';
+    document.getElementById('productDesc').value = p.description||'';
+  } else {
+    ['productId','productName','productImage','productDesc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('productPrice').value=0;
+    document.getElementById('productOriginalPrice').value='';
+    document.getElementById('productStock').value=0;
+  }
+}
+
+function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
+
+async function editProduct(id) {
+  try {
+    const p = await request({url:'/products/'+id});
+    showProductModal(p);
+  } catch(e) { alert('加载失败'); }
+}
+
+async function saveProduct() {
+  const id = document.getElementById('productId').value;
+  const data = { name: document.getElementById('productName').value, price: parseFloat(document.getElementById('productPrice').value)||0, original_price: parseFloat(document.getElementById('productOriginalPrice').value)||null, stock: parseInt(document.getElementById('productStock').value)||0, main_image: document.getElementById('productImage').value, description: document.getElementById('productDesc').value };
+  try {
+    if (id) await request({url:'/admin/products/'+id, method:'PUT', data});
+    else await request({url:'/admin/products', method:'POST', data});
+    alert('保存成功');
+    closeProductModal();
+    loadProducts();
+  } catch(e) { alert('保存失败'); }
+}
+
+// 分类管理
+async function loadCategories() {
+  try {
+    const data = await request({url:'/admin/categories'});
+    const list = data.list||data||[];
+    document.getElementById('categories-list').innerHTML = list.length ? list.map(c=>`<tr><td>${c.id?.slice(0,8)}</td><td>${c.name}</td><td><span class="tag ${c.is_enabled?'ok':'off'}">${c.is_enabled?'启用':'禁用'}</span></td><td><button class="btn btn-sm btn-outline" onclick="editCategory('${c.id}')">编辑</button></td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#999">暂无分类</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+function showCategoryModal(c) {
+  document.getElementById('categoryModal').classList.add('active');
+  document.getElementById('categoryModalTitle').textContent = c?'编辑分类':'新增分类';
+  document.getElementById('categoryId').value = c?.id||'';
+  document.getElementById('categoryName').value = c?.name||'';
+}
+
+function closeCategoryModal() { document.getElementById('categoryModal').classList.remove('active'); }
+
+async function editCategory(id) {
+  try {
+    const c = await request({url:'/categories/'+id});
+    showCategoryModal(c);
+  } catch(e) {}
+}
+
+async function saveCategory() {
+  const id = document.getElementById('categoryId').value;
+  const data = { name: document.getElementById('categoryName').value };
+  try {
+    if (id) await request({url:'/admin/categories/'+id, method:'PUT', data});
+    else await request({url:'/admin/categories', method:'POST', data});
+    alert('保存成功');
+    closeCategoryModal();
+    loadCategories();
+  } catch(e) { alert('保存失败'); }
+}
+
+// 订单管理
+let currentOrderStatus = 'ALL';
+document.querySelectorAll('.tabs .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentOrderStatus = tab.dataset.status;
+    loadOrders();
+  });
+});
+
+async function loadOrders() {
+  try {
+    const params = currentOrderStatus !== 'ALL' ? {status: currentOrderStatus} : {};
+    const data = await request({url:'/admin/orders', data: params});
+    const list = data.list||data||[];
+    document.getElementById('orders-list').innerHTML = list.length ? list.map(o=>`<tr><td>${o.order_no}</td><td>${fmtPrice(o.final_amount)}</td><td><span class="tag ${o.status==='PENDING_PAY'?'on':'ok'}">${statusText(o.status)}</span></td><td>${formatTime(o.created_at)}</td><td>${o.status==='PENDING_SHIP'?'<button class="btn btn-sm btn-success" onclick="shipOrder(\\''+o.id+'\\')">发货</button>':''}</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:#999">暂无订单</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+async function shipOrder(id) {
+  try {
+    await request({url:'/admin/orders/'+id+'/ship', method:'PUT', data:{}});
+    alert('发货成功');
+    loadOrders();
+  } catch(e) { alert('发货失败'); }
+}
+
+// 用户管理
+async function loadUsers() {
+  try {
+    const data = await request({url:'/admin/users'});
+    const list = data.list||data||[];
+    document.getElementById('users-list').innerHTML = list.length ? list.map(u=>`<tr><td>${u.id?.slice(0,8)}</td><td>${u.nickname||'-'}</td><td>${u.phone||'-'}</td><td>${formatTime(u.created_at)}</td><td>-</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:#999">暂无用户</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+// 区域管理
+async function loadRegions() {
+  try {
+    const data = await request({url:'/admin/regions'});
+    const list = data.list||data||[];
+    document.getElementById('regions-list').innerHTML = list.length ? list.map(r=>`<tr><td>${r.code||r.region_code}</td><td>${r.name||r.region_name}</td><td><span class="tag ${r.is_enabled?'ok':'off'}">${r.is_enabled?'启用':'禁用'}</span></td><td><button class="btn btn-sm btn-outline" onclick="editRegion('${r.code||r.region_code}')">编辑</button></td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#999">暂无区域</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+function showRegionModal(r) {
+  document.getElementById('regionModal').classList.add('active');
+  document.getElementById('regionModalTitle').textContent = r?'编辑区域':'新增区域';
+  document.getElementById('regionCode').value = r?.code||'';
+  document.getElementById('regionCodeInput').value = r?.code||'';
+  document.getElementById('regionName').value = r?.name||'';
+}
+
+function closeRegionModal() { document.getElementById('regionModal').classList.remove('active'); }
+
+function editRegion(code) {
+  request({url:'/regions/'+code}).then(r => showRegionModal({code, name: r.name})).catch(()=>{});
+}
+
+async function saveRegion() {
+  const code = document.getElementById('regionCodeInput').value;
+  const name = document.getElementById('regionName').value;
+  if (!code || !name) { alert('请填写完整'); return; }
+  try {
+    await request({url:'/admin/regions', method:'POST', data:{region_code: code, region_name: name}});
+    alert('保存成功');
+    closeRegionModal();
+    loadRegions();
+  } catch(e) { alert('保存失败'); }
+}
+
+function saveAdminSettings() {
+  const pwd = document.getElementById('adminPassword').value;
+  if (pwd) alert('密码已更新（实际需要调用API）');
+  else alert('请输入新密码');
+}
+
+// 初始化
+checkLogin();
+</script>
+</body>
+</html>
