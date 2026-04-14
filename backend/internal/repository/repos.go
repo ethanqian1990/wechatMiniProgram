@@ -287,3 +287,124 @@ func (r *CartRepository) Delete(id string) error {
 func (r *CartRepository) DeleteByUserID(userID string) error {
 	return DB.Where("user_id = ?", userID).Delete(&model.Cart{}).Error
 }
+// Order Repository
+type OrderRepository struct{}
+
+func NewOrderRepository() *OrderRepository {
+	return &OrderRepository{}
+}
+
+func (r *OrderRepository) FindAll(status string, page, pageSize int) ([]model.Order, int64, error) {
+	var orders []model.Order
+	var total int64
+
+	query := DB.Model(&model.Order{})
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	query.Count(&total)
+	offset := (page - 1) * pageSize
+	err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&orders).Error
+	return orders, total, err
+}
+
+func (r *OrderRepository) FindByID(id string) (*model.Order, error) {
+	var order model.Order
+	err := DB.First(&order, "id = ?", id).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &order, err
+}
+
+func (r *OrderRepository) UpdateStatus(id, status string) error {
+	return DB.Model(&model.Order{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func (r *OrderRepository) Update(id string, updates map[string]interface{}) error {
+	return DB.Model(&model.Order{}).Where("id = ?", id).Updates(updates).Error
+}
+
+type OrderItemRepository struct{}
+
+func NewOrderItemRepository() *OrderItemRepository {
+	return &OrderItemRepository{}
+}
+
+func (r *OrderItemRepository) FindByOrderID(orderID string) ([]model.OrderItem, error) {
+	var items []model.OrderItem
+	err := DB.Where("order_id = ?", orderID).Find(&items).Error
+	return items, err
+}
+
+// Additional methods for Product
+func (r *ProductRepository) FindAll(page, pageSize int) ([]model.Product, int64, error) {
+	var products []model.Product
+	var total int64
+	DB.Model(&model.Product{}).Count(&total)
+	offset := (page - 1) * pageSize
+	err := DB.Offset(offset).Limit(pageSize).Find(&products).Error
+	return products, total, err
+}
+
+func (r *ProductRepository) Create(product *model.Product) error {
+	return DB.Create(product).Error
+}
+
+func (r *ProductRepository) Delete(id string) error {
+	return DB.Delete(&model.Product{}, "id = ?", id).Error
+}
+
+// Additional methods for Region
+func (r *RegionRepository) FindAll() ([]model.Region, error) {
+	var regions []model.Region
+	err := DB.Order("sort_order ASC").Find(&regions).Error
+	return regions, err
+}
+
+func (r *RegionRepository) Create(region *model.Region) error {
+	return DB.Create(region).Error
+}
+
+// Additional methods for Category
+func (r *CategoryRepository) FindAll() ([]model.Category, error) {
+	var categories []model.Category
+	err := DB.Order("sort_order ASC").Find(&categories).Error
+	return categories, err
+}
+
+func (r *CategoryRepository) Create(category *model.Category) error {
+	return DB.Create(category).Error
+}
+
+func (r *CategoryRepository) Update(id string, updates map[string]interface{}) error {
+	return DB.Model(&model.Category{}).Where("id = ?", id).Updates(updates).Error
+}
+
+func (r *CategoryRepository) Delete(id string) error {
+
+	return DB.Delete(&model.Category{}, "id = ?", id).Error
+}
+
+// Missing methods
+func (r *ProductRepository) Update(id string, updates map[string]interface{}) error {
+	return DB.Model(&model.Product{}).Where("id = ?", id).Updates(updates).Error
+}
+
+func (r *UserRepository) FindAll(page, pageSize int) ([]model.User, int64, error) {
+	var users []model.User
+	var total int64
+	DB.Model(&model.User{}).Count(&total)
+	offset := (page - 1) * pageSize
+	err := DB.Offset(offset).Limit(pageSize).Find(&users).Error
+	return users, total, err
+}
+
+func (r *RegionRepository) Update(code string, updates map[string]interface{}) error {
+	return DB.Model(&model.Region{}).Where("code = ?", code).Updates(updates).Error
+}
+
+func (r *RegionRepository) Delete(code string) error {
+	return DB.Delete(&model.Region{}, "code = ?", code).Error
+}
