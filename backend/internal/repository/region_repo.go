@@ -2,6 +2,8 @@ package repository
 
 import (
 	github.com/ethanqian1990/wechat-mall-backend/internal/model
+	github.com/gin-gonic/gin
+	gorm  gorm.io/gorm
 )
 
 type RegionRepository struct{}
@@ -11,26 +13,28 @@ func NewRegionRepository() *RegionRepository {
 }
 
 func (r *RegionRepository) FindEnabled() ([]model.Region, error) {
-	// TODO: 实现数据库查询
-	return nil, nil
+	var regions []model.Region
+	err := DB.Where('is_enabled = ?', 1).Order('sort_order ASC').Find(&regions).Error
+	return regions, err
 }
 
 func (r *RegionRepository) FindByCode(code string) (*model.Region, error) {
-	// TODO: 实现数据库查询
-	return nil, nil
+	var region model.Region
+	err := DB.First(&region, 'code = ?', code).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &region, err
 }
 
 func (r *RegionRepository) Create(region *model.Region) error {
-	// TODO: 实现数据库创建
-	return nil
+	return DB.Create(region).Error
 }
 
 func (r *RegionRepository) Update(code string, updates map[string]interface{}) error {
-	// TODO: 实现数据库更新
-	return nil
+	return DB.Model(&model.Region{}).Where('code = ?', code).Updates(updates).Error
 }
 
 func (r *RegionRepository) Delete(code string) error {
-	// TODO: 实现数据库删除
-	return nil
+	return DB.Delete(&model.Region{}, 'code = ?', code).Error
 }

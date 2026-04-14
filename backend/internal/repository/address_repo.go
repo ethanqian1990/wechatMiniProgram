@@ -2,6 +2,8 @@ package repository
 
 import (
 	github.com/ethanqian1990/wechat-mall-backend/internal/model
+	github.com/gin-gonic/gin
+	gorm  gorm.io/gorm
 )
 
 type AddressRepository struct{}
@@ -11,41 +13,45 @@ func NewAddressRepository() *AddressRepository {
 }
 
 func (r *AddressRepository) FindByUserID(userID string) ([]model.Address, error) {
-	// TODO: 实现数据库查询
-	return nil, nil
+	var addresses []model.Address
+	err := DB.Where('user_id = ?', userID).Order('is_default DESC, created_at DESC').Find(&addresses).Error
+	return addresses, err
 }
 
 func (r *AddressRepository) FindByIDAndUserID(id, userID string) (*model.Address, error) {
-	// TODO: 实现数据库查询
-	return nil, nil
+	var address model.Address
+	err := DB.First(&address, 'id = ? AND user_id = ?', id, userID).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &address, err
 }
 
 func (r *AddressRepository) FindDefault(userID string) (*model.Address, error) {
-	// TODO: 实现默认地址查询
-	return nil, nil
+	var address model.Address
+	err := DB.First(&address, 'user_id = ? AND is_default = ?', userID, 1).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &address, err
 }
 
 func (r *AddressRepository) Create(address *model.Address) error {
-	// TODO: 实现数据库创建
-	return nil
+	return DB.Create(address).Error
 }
 
 func (r *AddressRepository) Update(id, userID string, updates map[string]interface{}) error {
-	// TODO: 实现数据库更新
-	return nil
+	return DB.Model(&model.Address{}).Where('id = ? AND user_id = ?', id, userID).Updates(updates).Error
 }
 
 func (r *AddressRepository) Delete(id, userID string) error {
-	// TODO: 实现数据库删除
-	return nil
+	return DB.Where('id = ? AND user_id = ?', id, userID).Delete(&model.Address{}).Error
 }
 
 func (r *AddressRepository) ClearDefault(userID string) error {
-	// TODO: 清除用户默认地址
-	return nil
+	return DB.Model(&model.Address{}).Where('user_id = ?', userID).Update('is_default', 0).Error
 }
 
 func (r *AddressRepository) SetDefault(id, userID string) error {
-	// TODO: 设置默认地址
-	return nil
+	return DB.Model(&model.Address{}).Where('id = ? AND user_id = ?', id, userID).Update('is_default', 1).Error
 }

@@ -3,6 +3,7 @@ package config
 import (
 	OS   .
 	yaml  gopkg.in/yaml.v3
+	Time   fmt
 )
 
 type Config struct {
