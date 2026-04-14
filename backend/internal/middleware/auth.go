@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ethanqian1990/wechat-mall-backend/pkg/response"
+	"strings"
 	"time"
 )
 
@@ -13,6 +14,13 @@ type Claims struct {
 	UserID string `json:"user_id"`
 	Role   string `json:"role"`
 	jwt.RegisteredClaims
+}
+
+func SetJWTSecret(secret string) {
+	if strings.TrimSpace(secret) == "" {
+		return
+	}
+	JWTSecret = []byte(secret)
 }
 
 func GenerateToken(userID string, role string) (string, error) {
@@ -30,6 +38,9 @@ func GenerateToken(userID string, role string) (string, error) {
 
 func ParseToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrTokenUnverifiable
+		}
 		return JWTSecret, nil
 	})
 	if err != nil {
@@ -50,7 +61,14 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		tokenString := authHeader[len("Bearer "):]
+		const prefix = "Bearer "
+		if !strings.HasPrefix(authHeader, prefix) || len(authHeader) <= len(prefix) {
+			response.Error(c, 401, "Token格式错误")
+			c.Abort()
+			return
+		}
+
+		tokenString := strings.TrimSpace(authHeader[len(prefix):])
 		claims, err := ParseToken(tokenString)
 		if err != nil {
 			response.Error(c, 401, "Token失效")

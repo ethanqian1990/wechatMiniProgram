@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ethanqian1990/wechat-mall-backend/pkg/response"
@@ -66,7 +66,7 @@ func (h *AdminProductHandler) CreateProduct(c *gin.Context) {
 		Stock:            req.Stock,
 		IsOnShelf:        1,
 		ShowOnHome:       1,
-		AvailableRegions:  toJSON(req.AvailableRegions),
+		AvailableRegions: toJSON(req.AvailableRegions),
 		Tags:             toJSON(req.Tags),
 		PromoText:       req.PromoText,
 	}
@@ -468,5 +468,9 @@ func toJSON(v interface{}) string {
 	if v == nil {
 		return "[]"
 	}
-	return fmt.Sprintf("%v", v)
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "[]"
+	}
+	return string(b)
 }

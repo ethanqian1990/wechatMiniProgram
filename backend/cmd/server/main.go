@@ -6,6 +6,7 @@ import (
 	"github.com/ethanqian1990/wechat-mall-backend/internal/handler"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/middleware"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/repository"
+	"github.com/ethanqian1990/wechat-mall-backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,10 +16,14 @@ func main() {
 		panic("加载配置失败: " + err.Error())
 	}
 
+	middleware.SetJWTSecret(cfg.JWT.Secret)
+
 	// 初始化数据库
 	if err := repository.InitDB(cfg); err != nil {
 		panic("数据库连接失败: " + err.Error())
 	}
+
+	service.NewCronService(cfg).Start()
 
 	r := gin.Default()
 	r.Use(middleware.CORS())
@@ -29,10 +34,13 @@ func main() {
 
 	api := r.Group("/api/v1")
 	{
+		adminAuthHandler := handler.NewAdminAuthHandler(cfg)
+		api.POST("/admin/login", adminAuthHandler.Login)
+
 		regionHandler := handler.NewRegionHandler()
 		categoryHandler := handler.NewCategoryHandler()
 		productHandler := handler.NewProductHandler()
-		homeHandler := handler.NewHomeHandler()
+		homeHandler := handler.NewHomeHandler(cfg)
 		searchHandler := handler.NewSearchHandler()
 
 		api.GET("/regions", regionHandler.GetRegions)
@@ -108,6 +116,42 @@ func main() {
 		admin.Use(middleware.AuthMiddleware())
 		admin.Use(middleware.AdminMiddleware())
 		{
+			adminProductHandler := handler.NewAdminProductHandler()
+			adminOrderHandler := handler.NewAdminOrderHandler()
+			adminUserHandler := handler.NewAdminUserHandler()
+			adminRegionHandler := handler.NewAdminRegionHandler()
+			adminCategoryHandler := handler.NewAdminCategoryHandler()
+
+			// 商品
+			admin.GET("/products", adminProductHandler.GetProducts)
+			admin.POST("/products", adminProductHandler.CreateProduct)
+			admin.PUT("/products/:id", adminProductHandler.UpdateProduct)
+			admin.DELETE("/products/:id", adminProductHandler.DeleteProduct)
+			admin.PUT("/products/:id/shelf", adminProductHandler.SetShelf)
+			admin.PUT("/products/:id/home", adminProductHandler.SetHome)
+
+			// 订单
+			admin.GET("/orders", adminOrderHandler.GetOrders)
+			admin.GET("/orders/:id", adminOrderHandler.GetOrder)
+			admin.PUT("/orders/:id/ship", adminOrderHandler.ShipOrder)
+			admin.PUT("/orders/:id/price", adminOrderHandler.UpdatePrice)
+
+			// 用户
+			admin.GET("/users", adminUserHandler.GetUsers)
+			admin.GET("/users/:id", adminUserHandler.GetUser)
+
+			// 区域
+			admin.GET("/regions", adminRegionHandler.GetRegions)
+			admin.POST("/regions", adminRegionHandler.CreateRegion)
+			admin.PUT("/regions/:code", adminRegionHandler.UpdateRegion)
+			admin.DELETE("/regions/:code", adminRegionHandler.DeleteRegion)
+
+			// 分类
+			admin.GET("/categories", adminCategoryHandler.GetCategories)
+			admin.POST("/categories", adminCategoryHandler.CreateCategory)
+			admin.PUT("/categories/:id", adminCategoryHandler.UpdateCategory)
+			admin.DELETE("/categories/:id", adminCategoryHandler.DeleteCategory)
+
 			admin.GET("/home/config", homeHandler.GetConfig)
 			admin.PUT("/home/config", homeHandler.UpdateConfig)
 		}

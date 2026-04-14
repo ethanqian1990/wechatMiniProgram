@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ethanqian1990/wechat-mall-backend/internal/middleware"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/model"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/repository"
 	"github.com/google/uuid"
@@ -37,7 +38,11 @@ func (s *UserService) WxLogin(code string) (*model.User, string, error) {
 		}
 	}
 	s.userRepo.UpdateLastLogin(user.ID)
-	return user, "mock_token_" + uuid.New().String()[:8], nil
+	token, err := middleware.GenerateToken(user.ID, "user")
+	if err != nil {
+		return nil, "", err
+	}
+	return user, token, nil
 }
 
 func (s *UserService) GetUserInfo(userID string) (*model.User, error) {
@@ -97,7 +102,14 @@ func NewProductService() *ProductService {
 }
 
 func (s *ProductService) GetProducts(regionCode string, categoryID, keyword string, onShelf, showOnHome int, page, pageSize int) ([]model.Product, int64, error) {
-	return s.productRepo.FindByFilter(regionCode, categoryID, keyword, onShelf, showOnHome, page, pageSize)
+	return s.productRepo.FindByFilter(regionCode, categoryID, keyword, onShelf, showOnHome, "sales_desc", page, pageSize)
+}
+
+func (s *ProductService) GetProductsWithSort(regionCode string, categoryID, keyword string, onShelf, showOnHome int, sort string, page, pageSize int) ([]model.Product, int64, error) {
+	if sort == "" {
+		sort = "sales_desc"
+	}
+	return s.productRepo.FindByFilter(regionCode, categoryID, keyword, onShelf, showOnHome, sort, page, pageSize)
 }
 
 func (s *ProductService) GetProductByID(id string) (*model.Product, error) {
@@ -157,11 +169,16 @@ func (s *CartService) AddToCart(userID, productID, skuID string, quantity int) e
 	if existing != nil {
 		return s.cartRepo.UpdateQuantity(existing.ID, existing.Quantity+quantity)
 	}
+
+	var skuIDPtr *string
+	if skuID != "" {
+		skuIDPtr = &skuID
+	}
 	cart := &model.Cart{
 		ID:        "cart_" + uuid.New().String()[:8],
 		UserID:    userID,
 		ProductID: productID,
-		SkuID:     &skuID,
+		SkuID:     skuIDPtr,
 		Quantity:  quantity,
 	}
 	return s.cartRepo.Create(cart)

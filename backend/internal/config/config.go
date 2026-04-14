@@ -11,6 +11,7 @@ type Config struct {
 	Redis    RedisConfig    `yaml:"redis"`
 	Wechat   WechatConfig   `yaml:"wechat"`
 	JWT      JWTConfig      `yaml:"jwt"`
+	Admin    AdminConfig    `yaml:"admin"`
 	Order    OrderConfig    `yaml:"order"`
 	Home     HomeConfig     `yaml:"home"`
 }
@@ -48,6 +49,11 @@ type WechatConfig struct {
 type JWTConfig struct {
 	Secret string `yaml:"secret"`
 	Expire string `yaml:"expire"`
+}
+
+type AdminConfig struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 type OrderConfig struct {

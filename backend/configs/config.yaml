@@ -28,6 +28,10 @@ jwt:
   secret: your_jwt_secret_key_change_in_production
   expire: 168h
 
+admin:
+  username: admin
+  password: admin123_change_in_production
+
 order:
   auto_cancel_minutes: 15
   auto_receive_days: 7

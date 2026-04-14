@@ -3,7 +3,9 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/ethanqian1990/wechat-mall-backend/pkg/response"
+	"github.com/ethanqian1990/wechat-mall-backend/internal/config"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/service"
+	"strconv"
 )
 
 type UserHandler struct {
@@ -126,10 +128,34 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 	regionCode := c.Query("region_code")
 	categoryID := c.Query("category_id")
 	keyword := c.Query("keyword")
+	onShelf := -1
+	showOnHome := -1
+	sort := c.Query("sort")
 	page := 1
 	pageSize := 20
 
-	products, total, err := h.productService.GetProducts(regionCode, categoryID, keyword, 1, -1, page, pageSize)
+	if v := c.Query("on_shelf"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			onShelf = n
+		}
+	}
+	if v := c.Query("show_on_home"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			showOnHome = n
+		}
+	}
+	if v := c.Query("page"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			page = n
+		}
+	}
+	if v := c.Query("page_size"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			pageSize = n
+		}
+	}
+
+	products, total, err := h.productService.GetProductsWithSort(regionCode, categoryID, keyword, onShelf, showOnHome, sort, page, pageSize)
 	if err != nil {
 		response.Error(c, 500, "获取商品列表失败")
 		return
@@ -309,45 +335,122 @@ func (h *AddressHandler) SetDefault(c *gin.Context) {
 	response.Success(c, nil)
 }
 
-type HomeHandler struct{}
+type HomeHandler struct {
+	homeService *service.HomeService
+}
 
-func NewHomeHandler() *HomeHandler {
-	return &HomeHandler{}
+func NewHomeHandler(cfg *config.Config) *HomeHandler {
+	return &HomeHandler{
+		homeService: service.NewHomeService(cfg),
+	}
 }
 
 func (h *HomeHandler) GetBanners(c *gin.Context) {
+	regionCode := c.Query("region_code")
+	if regionCode == "" {
+		response.Error(c, 400, "region_code 必填")
+		return
+	}
+
+	banners, err := h.homeService.GetBanners(regionCode)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+
 	response.Success(c, gin.H{
-		"region_code": c.Query("region_code"),
-		"banners":     []gin.H{},
+		"region_code": regionCode,
+		"banners":     banners,
 	})
 }
 
 func (h *HomeHandler) GetFeatured(c *gin.Context) {
+	regionCode := c.Query("region_code")
+	if regionCode == "" {
+		response.Error(c, 400, "region_code 必填")
+		return
+	}
+	categoryID := c.Query("category_id")
+
+	featured, err := h.homeService.GetFeatured(regionCode, categoryID)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+
 	response.Success(c, gin.H{
-		"region_code": c.Query("region_code"),
-		"featured":    nil,
+		"region_code": regionCode,
+		"featured":    featured,
 	})
 }
 
 func (h *HomeHandler) GetHomeProducts(c *gin.Context) {
+	regionCode := c.Query("region_code")
+	if regionCode == "" {
+		response.Error(c, 400, "region_code 必填")
+		return
+	}
+	categoryID := c.Query("category_id")
+
+	list, n, err := h.homeService.GetHomeProducts(regionCode, categoryID)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
 	response.Success(c, gin.H{
-		"region_code": c.Query("region_code"),
-		"list":        []gin.H{},
+		"region_code": regionCode,
+		"list_size":   n,
+		"list":        list,
 	})
 }
 
 func (h *HomeHandler) GetConfig(c *gin.Context) {
+	// MVP：后台配置读取留待后续（当前仅提供 UpdateConfig）
 	response.Success(c, gin.H{})
 }
 
 func (h *HomeHandler) UpdateConfig(c *gin.Context) {
+	var req struct {
+		RegionCode string                 `json:"region_code" binding:"required"`
+		Banners    []service.HomeBanner   `json:"banners"`
+		Featured   *service.FeaturedConfig `json:"featured"`
+		List       *service.ListConfig    `json:"list"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "参数错误")
+		return
+	}
+
+	if req.Banners != nil {
+		if err := h.homeService.UpdateRegionBanners(req.RegionCode, req.Banners); err != nil {
+			response.Error(c, 500, "更新 banners 失败", err.Error())
+			return
+		}
+	}
+	if req.Featured != nil {
+		if err := h.homeService.UpdateFeatured(req.RegionCode, *req.Featured); err != nil {
+			response.Error(c, 500, "更新 featured 失败", err.Error())
+			return
+		}
+	}
+	if req.List != nil {
+		if err := h.homeService.UpdateList(req.RegionCode, *req.List); err != nil {
+			response.Error(c, 500, "更新 list 失败", err.Error())
+			return
+		}
+	}
+
 	response.Success(c, nil)
 }
 
-type SearchHandler struct{}
+type SearchHandler struct {
+	searchService *service.SearchService
+}
 
 func NewSearchHandler() *SearchHandler {
-	return &SearchHandler{}
+	return &SearchHandler{
+		searchService: service.NewSearchService(),
+	}
 }
 
 func (h *SearchHandler) GetSuggest(c *gin.Context) {
@@ -359,53 +462,166 @@ func (h *SearchHandler) GetHotSearch(c *gin.Context) {
 }
 
 func (h *SearchHandler) GetHistory(c *gin.Context) {
-	response.Success(c, gin.H{"list": []string{}})
+	userID := c.GetString("user_id")
+	list, err := h.searchService.ListHistory(userID)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+	response.Success(c, gin.H{"list": list})
 }
 
 func (h *SearchHandler) ClearHistory(c *gin.Context) {
+	userID := c.GetString("user_id")
+	if err := h.searchService.ClearHistory(userID); err != nil {
+		response.Error(c, 500, "清空失败", err.Error())
+		return
+	}
 	response.Success(c, nil)
 }
 
-type OrderHandler struct{}
+type OrderHandler struct {
+	orderService *service.OrderService
+}
 
 func NewOrderHandler() *OrderHandler {
-	return &OrderHandler{}
+	return &OrderHandler{
+		orderService: service.NewOrderService(),
+	}
 }
 
 func (h *OrderHandler) GetOrders(c *gin.Context) {
-	response.Success(c, gin.H{"list": []gin.H{}, "total": 0})
+	userID := c.GetString("user_id")
+	status := c.Query("status")
+
+	page := 1
+	pageSize := 10
+	// 忽略解析错误，使用默认值
+	if v := c.Query("page"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			page = n
+		}
+	}
+	if v := c.Query("page_size"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			pageSize = n
+		}
+	}
+
+	orders, total, err := h.orderService.GetOrders(userID, status, page, pageSize)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+	response.Success(c, gin.H{"list": orders, "total": total})
 }
 
 func (h *OrderHandler) GetOrder(c *gin.Context) {
-	response.Success(c, gin.H{})
+	userID := c.GetString("user_id")
+	orderID := c.Param("id")
+	order, items, err := h.orderService.GetOrderDetail(userID, orderID)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+	if order == nil {
+		response.Error(c, 404, "订单不存在")
+		return
+	}
+	response.Success(c, gin.H{"order": order, "items": items})
 }
 
 func (h *OrderHandler) CreateOrder(c *gin.Context) {
-	response.Success(c, gin.H{})
+	userID := c.GetString("user_id")
+	var req service.CreateOrderReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "参数错误")
+		return
+	}
+	order, err := h.orderService.CreateOrder(userID, req)
+	if err != nil {
+		response.Error(c, 400, "创建失败", err.Error())
+		return
+	}
+	response.Success(c, gin.H{"order": order})
 }
 
 func (h *OrderHandler) CancelOrder(c *gin.Context) {
+	userID := c.GetString("user_id")
+	orderID := c.Param("id")
+	var req struct {
+		Reason string `json:"reason"`
+	}
+	_ = c.ShouldBindJSON(&req)
+	if err := h.orderService.CancelOrder(userID, orderID, req.Reason); err != nil {
+		response.Error(c, 400, "取消失败", err.Error())
+		return
+	}
 	response.Success(c, nil)
 }
 
 func (h *OrderHandler) ConfirmReceive(c *gin.Context) {
+	userID := c.GetString("user_id")
+	orderID := c.Param("id")
+	if err := h.orderService.ConfirmReceive(userID, orderID); err != nil {
+		response.Error(c, 400, "确认失败", err.Error())
+		return
+	}
 	response.Success(c, nil)
 }
 
-type PaymentHandler struct{}
+type PaymentHandler struct {
+	paymentService *service.PaymentService
+}
 
 func NewPaymentHandler() *PaymentHandler {
-	return &PaymentHandler{}
+	return &PaymentHandler{
+		paymentService: service.NewPaymentService(),
+	}
 }
 
 func (h *PaymentHandler) CreatePayment(c *gin.Context) {
-	response.Success(c, gin.H{})
+	userID := c.GetString("user_id")
+	var req struct {
+		OrderID string `json:"order_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "参数错误")
+		return
+	}
+	resp, err := h.paymentService.CreatePayment(userID, req.OrderID)
+	if err != nil {
+		response.Error(c, 400, "创建支付失败", err.Error())
+		return
+	}
+	response.Success(c, resp)
 }
 
 func (h *PaymentHandler) PayCallback(c *gin.Context) {
+	var req struct {
+		OrderID string `json:"order_id" binding:"required"`
+		Success bool   `json:"success"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "参数错误")
+		return
+	}
+	if req.Success {
+		if err := h.paymentService.MarkPaid(req.OrderID); err != nil {
+			response.Error(c, 500, "回调处理失败", err.Error())
+			return
+		}
+	}
 	response.Success(c, gin.H{"code": "SUCCESS"})
 }
 
 func (h *PaymentHandler) GetPayStatus(c *gin.Context) {
-	response.Success(c, gin.H{})
+	userID := c.GetString("user_id")
+	orderID := c.Param("order_id")
+	status, err := h.paymentService.GetPayStatus(userID, orderID)
+	if err != nil {
+		response.Error(c, 400, "获取失败", err.Error())
+		return
+	}
+	response.Success(c, gin.H{"order_id": orderID, "status": status})
 }

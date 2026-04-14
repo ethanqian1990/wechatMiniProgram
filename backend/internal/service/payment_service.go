@@ -2,113 +2,88 @@ package service
 
 import (
 	"fmt"
+	"time"
 
-	// wechatmall "github.com/ethanqian1990/wechat-mall-backend/internal/model"
-	wechatrepo "github.com/ethanqian1990/wechat-mall-backend/internal/repository"
-	"github.com/ethanqian1990/wechat-mall-backend/pkg/utils"
-	// "github.com/google/uuid"
+	"github.com/ethanqian1990/wechat-mall-backend/internal/model"
+	"github.com/ethanqian1990/wechat-mall-backend/internal/repository"
+	"gorm.io/gorm"
 )
 
 type PaymentService struct {
-	orderRepo    *wechatrepo.OrderRepository
-	stockRepo   *wechatrepo.StockReservationRepository
-	paymentUtil *utils.PaymentUtil
+	orderRepo *repository.OrderRepository
+	stockRepo *repository.StockReservationRepository
 }
 
-func NewPaymentService(paymentUtil *utils.PaymentUtil) *PaymentService {
+func NewPaymentService() *PaymentService {
 	return &PaymentService{
-		orderRepo:  wechatrepo.NewOrderRepository(),
-		stockRepo: wechatrepo.NewStockReservationRepository(),
-		paymentUtil: paymentUtil,
+		orderRepo: repository.NewOrderRepository(),
+		stockRepo: repository.NewStockReservationRepository(),
 	}
 }
 
-// CreatePayment 创建支付
-func (s *PaymentService) CreatePayment(userID, orderID string) (map[string]string, error) {
-	// 1. 获取订单
-	order, err := s.orderRepo.FindByIDAndUserID(orderID, userID)
-	if err != nil || order == nil {
+type CreatePaymentResp struct {
+	PayParams map[string]string `json:"pay_params"`
+}
+
+func (s *PaymentService) CreatePayment(userID, orderID string) (*CreatePaymentResp, error) {
+	order, err := s.orderRepo.FindByIDAndUser(orderID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if order == nil {
 		return nil, fmt.Errorf("订单不存在")
 	}
-
 	if order.Status != "PENDING_PAY" {
-		return nil, fmt.Errorf("订单状态不允许支付")
+		return nil, fmt.Errorf("当前状态不可支付")
 	}
-
-	// 2. 调用微信支付统一下单
-	amount := int64(order.FinalAmount * 100) // 微信支付单位是分
-	description := fmt.Sprintf("订单支付-%s", order.OrderNo)
-
-	result, err := s.paymentUtil.CreateUnifiedOrder(order.OrderNo, amount, description)
-	if err != nil {
-		return nil, fmt.Errorf("创建支付失败: %v", err)
-	}
-
-	if result.ErrCode != "" {
-		return nil, fmt.Errorf("微信支付错误: %s - %s", result.ErrCode, result.ErrMsg)
-	}
-
-	// 3. 返回支付参数
-	payParams := s.paymentUtil.GetJSAPIPayParams(result.PrepayID)
-	return payParams, nil
+	// MVP：返回 mock 的微信支付参数
+	return &CreatePaymentResp{
+		PayParams: map[string]string{
+			"mock":     "1",
+			"order_id": order.ID,
+			"amount":   fmt.Sprintf("%.2f", order.FinalAmount),
+		},
+	}, nil
 }
 
-// PayCallback 支付回调
-func (s *PaymentService) PayCallback(params map[string]string) error {
-	// 1. 验证签名
-	if !s.paymentUtil.VerifyCallback(params) {
-		return fmt.Errorf("签名验证失败")
-	}
+func (s *PaymentService) MarkPaid(orderID string) error {
+	now := time.Now()
+	return repository.DB.Transaction(func(tx *gorm.DB) error {
+		var order model.Order
+		if err := tx.First(&order, "id = ?", orderID).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return fmt.Errorf("订单不存在")
+			}
+			return err
+		}
 
-	// 2. 检查返回码
-	if params["return_code"] != "SUCCESS" {
-		return fmt.Errorf("微信返回失败: %s", params["return_msg"])
-	}
+		// 幂等：已支付/已发货/已完成等重复回调直接返回成功
+		if order.Status != "PENDING_PAY" {
+			return nil
+		}
 
-	// 3. 获取订单号和支付状态
-	orderNo := params["out_trade_no"]
-	transactionID := params["transaction_id"]
+		if err := tx.Model(&model.Order{}).
+			Where("id = ? AND status = ?", orderID, "PENDING_PAY").
+			Updates(map[string]interface{}{
+				"status":     "PENDING_SHIP",
+				"pay_at":     &now,
+				"updated_at": now,
+			}).Error; err != nil {
+			return err
+		}
 
-	// 4. 查找订单
-	orders, err := s.orderRepo.FindByOrderNo(orderNo)
-	if err != nil || len(orders) == 0 {
-		return fmt.Errorf("订单不存在: %s", orderNo)
-	}
-
-	order := orders[0]
-
-	// 5. 检查订单状态，防止重复处理
-	if order.Status != "PENDING_PAY" {
-		return nil // 已处理过，直接返回成功
-	}
-
-	// 6. 更新订单状态
-	if err := s.orderRepo.UpdateStatus(order.ID, "PENDING_SHIP"); err != nil {
-		return fmt.Errorf("更新订单状态失败: %v", err)
-	}
-
-	// 7. 更新订单交易号
-	s.orderRepo.UpdateOrder(order.ID, map[string]interface{}{
-		"transaction_id": transactionID,
-		"pay_at":        "NOW()",
+		// 冻结库存转已消耗
+		return s.stockRepo.MarkConsumedByOrderIDTx(tx, orderID)
 	})
-
-	// 8. 确认库存冻结（从FROZEN转为已扣减）
-	s.stockRepo.ConfirmByOrderID(order.ID)
-
-	return nil
 }
 
-// GetPayStatus 获取支付状态
-func (s *PaymentService) GetPayStatus(orderID, userID string) (string, error) {
-	order, err := s.orderRepo.FindByIDAndUserID(orderID, userID)
-	if err != nil || order == nil {
+func (s *PaymentService) GetPayStatus(userID, orderID string) (string, error) {
+	order, err := s.orderRepo.FindByIDAndUser(orderID, userID)
+	if err != nil {
+		return "", err
+	}
+	if order == nil {
 		return "", fmt.Errorf("订单不存在")
 	}
 	return order.Status, nil
-}
-
-// ConfirmPayment 确认支付（内部使用）
-func (s *PaymentService) ConfirmPayment(orderID string) error {
-	return s.orderRepo.UpdateStatus(orderID, "PENDING_SHIP")
 }

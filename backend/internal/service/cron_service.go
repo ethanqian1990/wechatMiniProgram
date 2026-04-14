@@ -4,49 +4,64 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ethanqian1990/wechat-mall-backend/internal/config"
 	wechatrepo "github.com/ethanqian1990/wechat-mall-backend/internal/repository"
 	"github.com/robfig/cron/v3"
 )
 
 type CronService struct {
+	c        *cron.Cron
 	orderRepo *wechatrepo.OrderRepository
-	skuRepo  *wechatrepo.SKURepository
+	skuRepo   *wechatrepo.SKURepository
 	stockRepo *wechatrepo.StockReservationRepository
+
+	autoCancelMinutes int
+	autoReceiveDays   int
 }
 
-func NewCronService() *CronService {
+func NewCronService(cfg *config.Config) *CronService {
+	autoCancel := cfg.Order.AutoCancelMinutes
+	if autoCancel <= 0 {
+		autoCancel = 15
+	}
+	autoReceive := cfg.Order.AutoReceiveDays
+	if autoReceive <= 0 {
+		autoReceive = 7
+	}
+
 	return &CronService{
+		c:        cron.New(),
 		orderRepo: wechatrepo.NewOrderRepository(),
-		skuRepo:  wechatrepo.NewSKURepository(),
+		skuRepo:   wechatrepo.NewSKURepository(),
 		stockRepo: wechatrepo.NewStockReservationRepository(),
+		autoCancelMinutes: autoCancel,
+		autoReceiveDays:   autoReceive,
 	}
 }
 
 func (s *CronService) Start() {
-	c := cron.New()
-
 	// 订单超时取消 - 每分钟执行
-	c.AddFunc("*/1 * * * *", func() {
+	s.c.AddFunc("*/1 * * * *", func() {
 		s.CancelExpiredOrders()
 	})
 
 	// 自动确认收货 - 每小时执行
-	c.AddFunc("0 * * * *", func() {
+	s.c.AddFunc("0 * * * *", func() {
 		s.AutoConfirmReceive()
 	})
 
 	// 库存释放 - 每5分钟执行
-	c.AddFunc("*/5 * * * *", func() {
+	s.c.AddFunc("*/5 * * * *", func() {
 		s.ReleaseExpiredStock()
 	})
 
-	c.Start()
+	s.c.Start()
 	fmt.Println("定时任务已启动")
 }
 
 // CancelExpiredOrders 取消超时订单（15分钟未支付）
 func (s *CronService) CancelExpiredOrders() {
-	expireTime := time.Now().Add(-15 * time.Minute)
+	expireTime := time.Now().Add(-time.Duration(s.autoCancelMinutes) * time.Minute)
 	
 	orders, err := s.orderRepo.FindExpiredOrders("PENDING_PAY", expireTime)
 	if err != nil {
@@ -71,7 +86,7 @@ func (s *CronService) CancelExpiredOrders() {
 
 // AutoConfirmReceive 自动确认收货（发货7天后）
 func (s *CronService) AutoConfirmReceive() {
-	expireTime := time.Now().Add(-7 * 24 * time.Hour)
+	expireTime := time.Now().Add(-time.Duration(s.autoReceiveDays) * 24 * time.Hour)
 	
 	orders, err := s.orderRepo.FindExpiredOrders("SHIPPED", expireTime)
 	if err != nil {

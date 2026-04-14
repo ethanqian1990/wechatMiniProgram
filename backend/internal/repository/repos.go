@@ -184,13 +184,13 @@ func NewProductRepository() *ProductRepository {
 	return &ProductRepository{}
 }
 
-func (r *ProductRepository) FindByFilter(regionCode, categoryID, keyword string, onShelf, showOnHome int, page, pageSize int) ([]model.Product, int64, error) {
+func (r *ProductRepository) FindByFilter(regionCode, categoryID, keyword string, onShelf, showOnHome int, sort string, page, pageSize int) ([]model.Product, int64, error) {
 	var products []model.Product
 	var total int64
 
-	query := DB.Model(&model.Product{}).Where("is_on_shelf = ? AND deleted_at IS NULL", 1)
+	query := DB.Model(&model.Product{}).Where("deleted_at IS NULL")
 	if regionCode != "" {
-		query = query.Where("available_regions LIKE ?", "%"+regionCode+"%")
+		query = query.Where("JSON_CONTAINS(available_regions, ?)", fmt.Sprintf("\"%s\"", regionCode))
 	}
 	if categoryID != "" {
 		query = query.Where("category_id = ?", categoryID)
@@ -198,10 +198,29 @@ func (r *ProductRepository) FindByFilter(regionCode, categoryID, keyword string,
 	if keyword != "" {
 		query = query.Where("name LIKE ?", "%"+keyword+"%")
 	}
+	if onShelf == 0 || onShelf == 1 {
+		query = query.Where("is_on_shelf = ?", onShelf)
+	}
+	if showOnHome == 0 || showOnHome == 1 {
+		query = query.Where("show_on_home = ?", showOnHome)
+	}
 
 	query.Count(&total)
 	offset := (page - 1) * pageSize
-	err := query.Order("sales_count DESC").Offset(offset).Limit(pageSize).Find(&products).Error
+
+	orderBy := "sales_count DESC"
+	switch sort {
+	case "sales_desc":
+		orderBy = "sales_count DESC"
+	case "created_desc":
+		orderBy = "created_at DESC"
+	case "price_asc":
+		orderBy = "price ASC"
+	case "price_desc":
+		orderBy = "price DESC"
+	}
+
+	err := query.Order(orderBy).Offset(offset).Limit(pageSize).Find(&products).Error
 	return products, total, err
 }
 
@@ -220,6 +239,71 @@ func (r *ProductRepository) UpdateOnShelf(id string, onShelf int) error {
 
 func (r *ProductRepository) UpdateShowOnHome(id string, showOnHome int) error {
 	return DB.Model(&model.Product{}).Where("id = ?", id).Update("show_on_home", showOnHome).Error
+}
+
+func (r *ProductRepository) FindHomeCandidates(regionCode, categoryID string, limit int, excludeIDs []string) ([]model.Product, error) {
+	var products []model.Product
+
+	query := DB.Model(&model.Product{}).
+		Where("is_on_shelf = ? AND show_on_home = ? AND deleted_at IS NULL", 1, 1)
+	if regionCode != "" {
+		// available_regions is JSON array of region_code strings
+		query = query.Where("JSON_CONTAINS(available_regions, ?)", fmt.Sprintf("\"%s\"", regionCode))
+	}
+	if categoryID != "" {
+		query = query.Where("category_id = ?", categoryID)
+	}
+	if len(excludeIDs) > 0 {
+		query = query.Where("id NOT IN ?", excludeIDs)
+	}
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+
+	err := query.Order("sales_count DESC").Find(&products).Error
+	return products, err
+}
+
+// HomeConfig Repository
+type HomeConfigRepository struct{}
+
+func NewHomeConfigRepository() *HomeConfigRepository {
+	return &HomeConfigRepository{}
+}
+
+func (r *HomeConfigRepository) FindByRegionAndType(regionCode, configType string) (*model.HomeConfig, error) {
+	var cfg model.HomeConfig
+	err := DB.First(&cfg, "region_code = ? AND config_type = ?", regionCode, configType).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &cfg, err
+}
+
+func (r *HomeConfigRepository) Upsert(regionCode, configType, configValue string) error {
+	now := time.Now()
+	var existing model.HomeConfig
+	err := DB.First(&existing, "region_code = ? AND config_type = ?", regionCode, configType).Error
+	if err == nil {
+		return DB.Model(&model.HomeConfig{}).
+			Where("id = ?", existing.ID).
+			Updates(map[string]interface{}{
+				"config_value": configValue,
+				"updated_at":   now,
+			}).Error
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+	return DB.Create(&model.HomeConfig{
+		ID:          "homecfg_" + fmt.Sprintf("%d", now.UnixNano()),
+		RegionCode:  regionCode,
+		ConfigType:  configType,
+		ConfigValue: configValue,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}).Error
 }
 
 // SKU Repository
@@ -320,6 +404,40 @@ func (r *OrderRepository) FindByID(id string) (*model.Order, error) {
 
 func (r *OrderRepository) UpdateStatus(id, status string) error {
 	return DB.Model(&model.Order{}).Where("id = ?", id).Update("status", status).Error
+}
+
+
+func (r *OrderRepository) FindByUser(userID, status string, page, pageSize int) ([]model.Order, int64, error) {
+	var orders []model.Order
+	var total int64
+
+	query := DB.Model(&model.Order{}).Where("user_id = ?", userID)
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	query.Count(&total)
+	offset := (page - 1) * pageSize
+	err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&orders).Error
+	return orders, total, err
+}
+
+func (r *OrderRepository) FindByIDAndUser(id, userID string) (*model.Order, error) {
+	var order model.Order
+	err := DB.First(&order, "id = ? AND user_id = ?", id, userID).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &order, err
+}
+
+func (r *OrderRepository) FindByUserAndClientToken(userID, token string) (*model.Order, error) {
+	var order model.Order
+	err := DB.First(&order, "user_id = ? AND client_order_token = ?", userID, token).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &order, err
 }
 
 
@@ -484,6 +602,12 @@ func NewStockReservationRepository() *StockReservationRepository {
 	return &StockReservationRepository{}
 }
 
+func (r *StockReservationRepository) MarkConsumedByOrderIDTx(tx *gorm.DB, orderID string) error {
+	return tx.Model(&model.StockReservation{}).
+		Where("order_id = ? AND status = ?", orderID, "FROZEN").
+		Update("status", "CONSUMED").Error
+}
+
 // ReleaseStock 释放冻结的库存
 func (r *SKURepository) ReleaseStock(skuID string, quantity int) error {
 	return DB.Model(&model.ProductSKU{}).Where("id = ?", skuID).
@@ -507,7 +631,7 @@ func (r *OrderRepository) FindByIDAndUserID(id, userID string) (*model.Order, er
 // ConfirmByOrderID 确认库存冻结
 func (r *StockReservationRepository) ConfirmByOrderID(orderID string) error {
 	return DB.Model(&model.StockReservation{}).Where("order_id = ? AND status = ?", orderID, "FROZEN").
-		Update("status", "CONFIRMED").Error
+		Update("status", "CONSUMED").Error
 }
 
 func (r *OrderRepository) FindByOrderNo(orderNo string) ([]model.Order, error) {
