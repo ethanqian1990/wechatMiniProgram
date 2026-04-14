@@ -47,7 +47,7 @@ func NewUserRepository() *UserRepository {
 
 func (r *UserRepository) FindByOpenID(openID string) (*model.User, error) {
 	var user model.User
-	err := DB.Where("openid = ?", openID).First(&user).Error
+	err := DB.Where("open_id = ?", openID).First(&user).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
@@ -463,6 +463,19 @@ func (r *ProductRepository) FindAll(page, pageSize int) ([]model.Product, int64,
 	return products, total, err
 }
 
+func (r *ProductRepository) SuggestNamesByPrefix(prefix string, limit int) ([]string, error) {
+	var names []string
+	if limit <= 0 {
+		limit = 10
+	}
+	err := DB.Model(&model.Product{}).
+		Where("deleted_at IS NULL AND name LIKE ?", prefix+"%").
+		Order("sales_count DESC").
+		Limit(limit).
+		Pluck("name", &names).Error
+	return names, err
+}
+
 func (r *ProductRepository) Create(product *model.Product) error {
 	return DB.Create(product).Error
 }
@@ -600,6 +613,32 @@ type StockReservationRepository struct{}
 
 func NewStockReservationRepository() *StockReservationRepository {
 	return &StockReservationRepository{}
+}
+
+// ReleaseByOrderIDTx 事务内释放订单冻结库存（原子从 FROZEN -> RELEASED，避免重复返还）
+func (r *StockReservationRepository) ReleaseByOrderIDTx(tx *gorm.DB, orderID string) error {
+	var reservations []model.StockReservation
+	if err := tx.Where("order_id = ? AND status = ?", orderID, "FROZEN").Find(&reservations).Error; err != nil {
+		return err
+	}
+
+	for _, res := range reservations {
+		// 原子抢占状态：只有仍为 FROZEN 的记录才允许释放并返还库存
+		upd := tx.Model(&model.StockReservation{}).
+			Where("id = ? AND status = ?", res.ID, "FROZEN").
+			Update("status", "RELEASED")
+		if upd.Error != nil {
+			return upd.Error
+		}
+		if upd.RowsAffected == 0 {
+			continue
+		}
+		if err := tx.Model(&model.ProductSKU{}).Where("id = ?", res.SkuID).
+			Update("stock", gorm.Expr("stock + ?", res.Quantity)).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *StockReservationRepository) MarkConsumedByOrderIDTx(tx *gorm.DB, orderID string) error {

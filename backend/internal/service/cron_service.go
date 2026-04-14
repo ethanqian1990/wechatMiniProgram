@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/ethanqian1990/wechat-mall-backend/internal/config"
+	"github.com/ethanqian1990/wechat-mall-backend/internal/model"
 	wechatrepo "github.com/ethanqian1990/wechat-mall-backend/internal/repository"
 	"github.com/robfig/cron/v3"
+	"gorm.io/gorm"
 )
 
 type CronService struct {
@@ -70,14 +72,16 @@ func (s *CronService) CancelExpiredOrders() {
 	}
 
 	for _, order := range orders {
-		// 释放冻结库存
-		if err := s.stockRepo.ReleaseByOrderID(order.ID); err != nil {
-			fmt.Printf("释放库存失败: %v\n", err)
-		}
-
-		// 更新订单状态
-		if err := s.orderRepo.UpdateStatus(order.ID, "CANCELED"); err != nil {
-			fmt.Printf("取消订单失败: %v\n", err)
+		// 事务化：先更新订单状态，再释放冻结库存（避免并发/重入导致重复返还）
+		err := wechatrepo.DB.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Model(&model.Order{}).Where("id = ? AND status = ?", order.ID, "PENDING_PAY").
+				Update("status", "CANCELED").Error; err != nil {
+				return err
+			}
+			return s.stockRepo.ReleaseByOrderIDTx(tx, order.ID)
+		})
+		if err != nil {
+			fmt.Printf("超时取消失败: %v\n", err)
 		} else {
 			fmt.Printf("订单 %s 已超时取消\n", order.OrderNo)
 		}
@@ -114,14 +118,22 @@ func (s *CronService) ReleaseExpiredStock() {
 	}
 
 	for _, res := range reservations {
-		// 恢复库存
-		if err := s.skuRepo.ReleaseStock(res.SkuID, res.Quantity); err != nil {
-			fmt.Printf("恢复库存失败: %v\n", err)
-		}
-
-		// 更新冻结状态
-		if err := s.stockRepo.MarkReleased(res.ID); err != nil {
-			fmt.Printf("更新冻结状态失败: %v\n", err)
+		// 事务化：原子将 FROZEN -> RELEASED 成功后再返还库存，避免重复加回
+		err := wechatrepo.DB.Transaction(func(tx *gorm.DB) error {
+			upd := tx.Model(&model.StockReservation{}).
+				Where("id = ? AND status = ?", res.ID, "FROZEN").
+				Update("status", "RELEASED")
+			if upd.Error != nil {
+				return upd.Error
+			}
+			if upd.RowsAffected == 0 {
+				return nil
+			}
+			return tx.Model(&model.ProductSKU{}).Where("id = ?", res.SkuID).
+				Update("stock", gorm.Expr("stock + ?", res.Quantity)).Error
+		})
+		if err != nil {
+			fmt.Printf("释放过期冻结库存失败: %v\n", err)
 		} else {
 			fmt.Printf("已释放过期冻结库存: %s, 数量: %d\n", res.SkuID, res.Quantity)
 		}

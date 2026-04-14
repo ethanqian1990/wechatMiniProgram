@@ -216,8 +216,8 @@ func (s *OrderService) CancelOrder(userID, orderID, reason string) error {
 			}).Error; err != nil {
 			return err
 		}
-		// 释放冻结库存（当前实现会返还 stock 并标记 RELEASED）
-		return s.stockRepo.ReleaseByOrderID(order.ID)
+		// 释放冻结库存（事务内，避免重复返还）
+		return s.stockRepo.ReleaseByOrderIDTx(tx, order.ID)
 	})
 }
 

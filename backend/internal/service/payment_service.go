@@ -77,6 +77,49 @@ func (s *PaymentService) MarkPaid(orderID string) error {
 	})
 }
 
+func (s *PaymentService) MarkPaidWithTransaction(orderID, transactionID string) error {
+	if transactionID == "" {
+		return s.MarkPaid(orderID)
+	}
+
+	now := time.Now()
+	return repository.DB.Transaction(func(tx *gorm.DB) error {
+		var order model.Order
+		if err := tx.First(&order, "id = ?", orderID).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return fmt.Errorf("订单不存在")
+			}
+			return err
+		}
+
+		// 幂等：已处理过
+		if order.PaidTransactionID != "" {
+			if order.PaidTransactionID == transactionID {
+				return nil
+			}
+			return fmt.Errorf("交易号冲突")
+		}
+		if order.Status != "PENDING_PAY" {
+			// 已经不是待支付，但没有记录交易号：补不上时直接当作已处理
+			return nil
+		}
+
+		// 原子写入：status=待支付 且 paid_transaction_id 为空时写入交易号并更新状态
+		err := tx.Model(&model.Order{}).
+			Where("id = ? AND status = ? AND (paid_transaction_id = '' OR paid_transaction_id IS NULL)", orderID, "PENDING_PAY").
+			Updates(map[string]interface{}{
+				"status":              "PENDING_SHIP",
+				"pay_at":              &now,
+				"paid_transaction_id": transactionID,
+				"updated_at":          now,
+			}).Error
+		if err != nil {
+			return err
+		}
+		return s.stockRepo.MarkConsumedByOrderIDTx(tx, orderID)
+	})
+}
+
 func (s *PaymentService) GetPayStatus(userID, orderID string) (string, error) {
 	order, err := s.orderRepo.FindByIDAndUser(orderID, userID)
 	if err != nil {

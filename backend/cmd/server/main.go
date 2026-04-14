@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/config"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/handler"
 	"github.com/ethanqian1990/wechat-mall-backend/internal/middleware"
@@ -16,7 +17,15 @@ func main() {
 		panic("加载配置失败: " + err.Error())
 	}
 
+	if cfg.JWT.Secret == "" {
+		panic("jwt.secret 不能为空")
+	}
 	middleware.SetJWTSecret(cfg.JWT.Secret)
+	if cfg.JWT.Expire != "" {
+		if d, err := time.ParseDuration(cfg.JWT.Expire); err == nil {
+			middleware.SetJWTExpire(d)
+		}
+	}
 
 	// 初始化数据库
 	if err := repository.InitDB(cfg); err != nil {
@@ -94,6 +103,7 @@ func main() {
 			order.GET("/:id", orderHandler.GetOrder)
 			order.POST("", orderHandler.CreateOrder)
 			order.PUT("/:id/cancel", orderHandler.CancelOrder)
+			order.PUT("/:id/pay", orderHandler.PayOrder)
 			order.PUT("/:id/confirm", orderHandler.ConfirmReceive)
 		}
 

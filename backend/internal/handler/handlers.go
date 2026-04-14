@@ -405,8 +405,17 @@ func (h *HomeHandler) GetHomeProducts(c *gin.Context) {
 }
 
 func (h *HomeHandler) GetConfig(c *gin.Context) {
-	// MVP：后台配置读取留待后续（当前仅提供 UpdateConfig）
-	response.Success(c, gin.H{})
+	regionCode := c.Query("region_code")
+	if regionCode == "" {
+		response.Error(c, 400, "region_code 必填")
+		return
+	}
+	cfg, err := h.homeService.GetAllConfig(regionCode)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+	response.Success(c, cfg)
 }
 
 func (h *HomeHandler) UpdateConfig(c *gin.Context) {
@@ -454,11 +463,22 @@ func NewSearchHandler() *SearchHandler {
 }
 
 func (h *SearchHandler) GetSuggest(c *gin.Context) {
-	response.Success(c, gin.H{"list": []string{}})
+	keyword := c.Query("keyword")
+	list, err := h.searchService.Suggest(keyword, 10)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+	response.Success(c, gin.H{"list": list})
 }
 
 func (h *SearchHandler) GetHotSearch(c *gin.Context) {
-	response.Success(c, gin.H{"list": []string{"苹果", "大米", "土鸡蛋"}})
+	list, err := h.searchService.Hot(10)
+	if err != nil {
+		response.Error(c, 500, "获取失败", err.Error())
+		return
+	}
+	response.Success(c, gin.H{"list": list})
 }
 
 func (h *SearchHandler) GetHistory(c *gin.Context) {
@@ -570,6 +590,18 @@ func (h *OrderHandler) ConfirmReceive(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+func (h *OrderHandler) PayOrder(c *gin.Context) {
+	userID := c.GetString("user_id")
+	orderID := c.Param("id")
+
+	payResp, err := service.NewPaymentService().CreatePayment(userID, orderID)
+	if err != nil {
+		response.Error(c, 400, "发起支付失败", err.Error())
+		return
+	}
+	response.Success(c, payResp)
+}
+
 type PaymentHandler struct {
 	paymentService *service.PaymentService
 }
@@ -599,15 +631,16 @@ func (h *PaymentHandler) CreatePayment(c *gin.Context) {
 
 func (h *PaymentHandler) PayCallback(c *gin.Context) {
 	var req struct {
-		OrderID string `json:"order_id" binding:"required"`
-		Success bool   `json:"success"`
+		OrderID        string `json:"order_id" binding:"required"`
+		Success        bool   `json:"success"`
+		TransactionID  string `json:"transaction_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, 400, "参数错误")
 		return
 	}
 	if req.Success {
-		if err := h.paymentService.MarkPaid(req.OrderID); err != nil {
+		if err := h.paymentService.MarkPaidWithTransaction(req.OrderID, req.TransactionID); err != nil {
 			response.Error(c, 500, "回调处理失败", err.Error())
 			return
 		}

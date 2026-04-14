@@ -9,6 +9,7 @@ import (
 )
 
 var JWTSecret = []byte("your_jwt_secret")
+var JWTExpire = 168 * time.Hour
 
 type Claims struct {
 	UserID string `json:"user_id"`
@@ -23,12 +24,19 @@ func SetJWTSecret(secret string) {
 	JWTSecret = []byte(secret)
 }
 
+func SetJWTExpire(d time.Duration) {
+	if d <= 0 {
+		return
+	}
+	JWTExpire = d
+}
+
 func GenerateToken(userID string, role string) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(168 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(JWTExpire)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ethanqian1990/wechat-mall-backend/pkg/response"
@@ -114,7 +115,7 @@ func (h *AdminProductHandler) UpdateProduct(c *gin.Context) {
 	if req.Stock >= 0 {
 		updates["stock"] = req.Stock
 	}
-	if req.IsOnShelf > 0 {
+	if req.IsOnShelf == 0 || req.IsOnShelf == 1 {
 		updates["is_on_shelf"] = req.IsOnShelf
 	}
 	if req.ShowOnHome >= 0 {
@@ -231,7 +232,14 @@ func (h *AdminOrderHandler) ShipOrder(c *gin.Context) {
 		return
 	}
 
-	err := h.orderRepo.UpdateStatus(id, "SHIPPED")
+	now := time.Now()
+	err := h.orderRepo.UpdateOrder(id, map[string]interface{}{
+		"status":          "SHIPPED",
+		"express_company": req.ExpressCompany,
+		"express_no":      req.ExpressNo,
+		"ship_at":         &now,
+		"updated_at":      now,
+	})
 	if err != nil {
 		response.Error(c, 500, "发货失败")
 		return

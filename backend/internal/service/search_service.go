@@ -6,11 +6,13 @@ import (
 
 type SearchService struct {
 	historyRepo *repository.SearchHistoryRepository
+	productRepo *repository.ProductRepository
 }
 
 func NewSearchService() *SearchService {
 	return &SearchService{
 		historyRepo: repository.NewSearchHistoryRepository(),
+		productRepo: repository.NewProductRepository(),
 	}
 }
 
@@ -28,4 +30,18 @@ func (s *SearchService) ListHistory(userID string) ([]string, error) {
 
 func (s *SearchService) ClearHistory(userID string) error {
 	return s.historyRepo.DeleteByUserID(userID)
+}
+
+func (s *SearchService) Suggest(keyword string, limit int) ([]string, error) {
+	if keyword == "" {
+		return []string{}, nil
+	}
+	return s.productRepo.SuggestNamesByPrefix(keyword, limit)
+}
+
+func (s *SearchService) Hot(limit int) ([]string, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	return s.historyRepo.FindHotKeywords(limit)
 }

@@ -145,6 +145,9 @@ type Order struct {
 	CancelReason     string     `json:"cancel_reason" gorm:"column:cancel_reason;type:varchar(200)"`
 	ClientOrderToken string     `json:"client_order_token" gorm:"column:client_order_token;type:varchar(64)"`
 	RegionCode       string     `json:"region_code" gorm:"column:region_code;type:varchar(20)"`
+	ExpressCompany   string     `json:"express_company" gorm:"column:express_company;type:varchar(50)"`
+	ExpressNo        string     `json:"express_no" gorm:"column:express_no;type:varchar(64)"`
+	PaidTransactionID string    `json:"paid_transaction_id" gorm:"column:paid_transaction_id;type:varchar(64)"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 }

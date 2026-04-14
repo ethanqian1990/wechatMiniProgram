@@ -162,6 +162,9 @@ CREATE TABLE IF NOT EXISTS orders (
     cancel_reason       VARCHAR(200) COMMENT '取消原因',
     client_order_token  VARCHAR(64) COMMENT '客户端订单token',
     region_code         VARCHAR(20) COMMENT '下单区域',
+    express_company     VARCHAR(50) COMMENT '快递公司',
+    express_no          VARCHAR(64) COMMENT '快递单号',
+    paid_transaction_id VARCHAR(64) COMMENT '支付交易号(幂等)',
     created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_user (user_id),
@@ -170,6 +173,7 @@ CREATE TABLE IF NOT EXISTS orders (
     INDEX idx_token (client_order_token),
     INDEX idx_created (created_at),
     INDEX idx_region (region_code),
+    UNIQUE KEY uk_paid_tx (paid_transaction_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
 

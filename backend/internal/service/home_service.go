@@ -180,3 +180,42 @@ func (s *HomeService) UpdateList(regionCode string, lc ListConfig) error {
 	return s.homeCfgRepo.Upsert(regionCode, "list", string(bs))
 }
 
+type HomeAllConfig struct {
+	RegionCode string         `json:"region_code"`
+	Banners    []HomeBanner   `json:"banners"`
+	Featured   FeaturedConfig `json:"featured"`
+	List       ListConfig     `json:"list"`
+}
+
+func (s *HomeService) GetAllConfig(regionCode string) (*HomeAllConfig, error) {
+	banners, err := s.GetBanners(regionCode)
+	if err != nil {
+		return nil, err
+	}
+
+	featuredRec, err := s.homeCfgRepo.FindByRegionAndType(regionCode, "featured")
+	if err != nil {
+		return nil, err
+	}
+	var fc FeaturedConfig
+	if featuredRec != nil && featuredRec.ConfigValue != "" {
+		_ = json.Unmarshal([]byte(featuredRec.ConfigValue), &fc)
+	}
+
+	listRec, err := s.homeCfgRepo.FindByRegionAndType(regionCode, "list")
+	if err != nil {
+		return nil, err
+	}
+	var lc ListConfig
+	if listRec != nil && listRec.ConfigValue != "" {
+		_ = json.Unmarshal([]byte(listRec.ConfigValue), &lc)
+	}
+
+	return &HomeAllConfig{
+		RegionCode: regionCode,
+		Banners:    banners,
+		Featured:   fc,
+		List:       lc,
+	}, nil
+}
+
