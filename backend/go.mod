@@ -45,3 +45,5 @@ require (
 	golang.org/x/text v0.34.0
 	google.golang.org/protobuf v1.36.10
 )
+
+require github.com/robfig/cron/v3 v3.0.1 // indirect

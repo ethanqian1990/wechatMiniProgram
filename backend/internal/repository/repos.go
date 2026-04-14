@@ -408,3 +408,87 @@ func (r *RegionRepository) Update(code string, updates map[string]interface{}) e
 func (r *RegionRepository) Delete(code string) error {
 	return DB.Delete(&model.Region{}, "code = ?", code).Error
 }
+
+// FindExpiredOrders 查询过期订单
+func (r *OrderRepository) FindExpiredOrders(status string, expireTime time.Time) ([]model.Order, error) {
+	var orders []model.Order
+	err := DB.Where("status = ? AND created_at < ?", status, expireTime).Find(&orders).Error
+	return orders, err
+}
+
+// ReleaseByOrderID 释放订单的所有冻结库存
+func (r *StockReservationRepository) ReleaseByOrderID(orderID string) error {
+	var reservations []model.StockReservation
+	err := DB.Where("order_id = ? AND status = ?", orderID, "FROZEN").Find(&reservations).Error
+	if err != nil {
+		return err
+	}
+
+	for _, res := range reservations {
+		DB.Model(&model.ProductSKU{}).Where("id = ?", res.SkuID).
+			Update("stock", gorm.Expr("stock + ?", res.Quantity))
+		DB.Model(&model.StockReservation{}).Where("id = ?", res.ID).Update("status", "RELEASED")
+	}
+	return nil
+}
+
+// FindExpired 查询过期的冻结记录
+func (r *StockReservationRepository) FindExpired(now time.Time) ([]model.StockReservation, error) {
+	var reservations []model.StockReservation
+	err := DB.Where("status = ? AND expire_at < ?", "FROZEN", now).Find(&reservations).Error
+	return reservations, err
+}
+
+// MarkReleased 标记为已释放
+func (r *StockReservationRepository) MarkReleased(id string) error {
+	return DB.Model(&model.StockReservation{}).Where("id = ?", id).Update("status", "RELEASED").Error
+}
+
+// SearchHistory Repository
+type SearchHistoryRepository struct{}
+
+func NewSearchHistoryRepository() *SearchHistoryRepository {
+	return &SearchHistoryRepository{}
+}
+
+func (r *SearchHistoryRepository) Create(history *model.SearchHistory) error {
+	return DB.Create(history).Error
+}
+
+func (r *SearchHistoryRepository) FindByUserID(userID string) ([]model.SearchHistory, error) {
+	var histories []model.SearchHistory
+	err := DB.Where("user_id = ?", userID).Order("created_at DESC").Limit(20).Find(&histories).Error
+	return histories, err
+}
+
+func (r *SearchHistoryRepository) DeleteByUserAndKeyword(userID, keyword string) error {
+	return DB.Where("user_id = ? AND keyword = ?", userID, keyword).Delete(&model.SearchHistory{}).Error
+}
+
+func (r *SearchHistoryRepository) DeleteByUserID(userID string) error {
+	return DB.Where("user_id = ?", userID).Delete(&model.SearchHistory{}).Error
+}
+
+func (r *SearchHistoryRepository) FindHotKeywords(limit int) ([]string, error) {
+	var keywords []string
+	err := DB.Model(&model.SearchHistory{}).
+		Select("keyword, COUNT(*) as count").
+		Group("keyword").
+		Order("count DESC").
+		Limit(limit).
+		Pluck("keyword", &keywords).Error
+	return keywords, err
+}
+
+// StockReservation Repository
+type StockReservationRepository struct{}
+
+func NewStockReservationRepository() *StockReservationRepository {
+	return &StockReservationRepository{}
+}
+
+// ReleaseStock 释放冻结的库存
+func (r *SKURepository) ReleaseStock(skuID string, quantity int) error {
+	return DB.Model(&model.ProductSKU{}).Where("id = ?", skuID).
+		Update("stock", gorm.Expr("stock + ?", quantity)).Error
+}
